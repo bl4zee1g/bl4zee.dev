@@ -237,3 +237,41 @@ function executeCommand(container) {
 }
 
 document.addEventListener('DOMContentLoaded', initTerminalAnimation);
+
+document.addEventListener('DOMContentLoaded', initTerminalAnimation);
+
+// Carousel Autoscroll
+document.addEventListener('DOMContentLoaded', () => {
+    const carousel = document.getElementById('connect-carousel');
+    if (!carousel) return;
+
+    let isPaused = false;
+    let scrollPos = 0;
+    let direction = 1; // 1 for right, -1 for left
+    const scrollSpeed = 0.3; // Pixels per frame
+
+    function step() {
+        if (!isPaused) {
+            scrollPos += scrollSpeed * direction;
+
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+
+            if (scrollPos >= maxScroll) {
+                scrollPos = maxScroll;
+                direction = -1;
+            } else if (scrollPos <= 0) {
+                scrollPos = 0;
+                direction = 1;
+            }
+
+            carousel.scrollLeft = scrollPos;
+        }
+        requestAnimationFrame(step);
+    }
+
+    carousel.addEventListener('mouseenter', () => isPaused = true);
+    carousel.addEventListener('mouseleave', () => isPaused = false);
+
+    // Initial start
+    requestAnimationFrame(step);
+});
