@@ -1039,7 +1039,7 @@
                 }
 
                 carousel.addEventListener('scroll', () => {
-                    if (isInteracting) {
+                    if (isInteracting || isPaused || isWaiting) {
                         scrollPos = carousel.scrollLeft;
                     }
                 });
