@@ -33,10 +33,7 @@
             gap: 1.5rem;
             overflow-x: auto;
             scroll-behavior: auto;
-            padding: 1rem 0;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
+            padding: 1rem 40px;
         }
 
         .carousel-wrapper::-webkit-scrollbar {
@@ -233,8 +230,15 @@
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
         }
 
         /* Terminal Emulator */
@@ -265,9 +269,17 @@
             border-radius: 50%;
         }
 
-        .dot-red { background: #f38ba8; }
-        .dot-yellow { background: #f9e2af; }
-        .dot-green { background: #a6e3a1; }
+        .dot-red {
+            background: #f38ba8;
+        }
+
+        .dot-yellow {
+            background: #f9e2af;
+        }
+
+        .dot-green {
+            background: #a6e3a1;
+        }
 
         .terminal-title {
             margin-left: auto;
@@ -293,13 +305,31 @@
             margin-bottom: 0.5rem;
         }
 
-        .prompt-user { color: #89b4fa; font-weight: bold; }
-        .prompt-at { color: #cdd6f4; }
-        .prompt-host { color: #89b4fa; font-weight: bold; }
-        .prompt-path { color: #f5c2e7; }
-        .prompt-symbol { color: #a6e3a1; }
+        .prompt-user {
+            color: #89b4fa;
+            font-weight: bold;
+        }
 
-        .input-line { display: inline-block; }
+        .prompt-at {
+            color: #cdd6f4;
+        }
+
+        .prompt-host {
+            color: #89b4fa;
+            font-weight: bold;
+        }
+
+        .prompt-path {
+            color: #f5c2e7;
+        }
+
+        .prompt-symbol {
+            color: #a6e3a1;
+        }
+
+        .input-line {
+            display: inline-block;
+        }
 
         .cursor-block {
             display: inline-block;
@@ -311,8 +341,15 @@
         }
 
         @keyframes blink-block {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
         }
 
         .neofetch-output {
@@ -327,7 +364,10 @@
                 flex-direction: row;
                 align-items: flex-start;
             }
-            .logo-art { flex-shrink: 0; }
+
+            .logo-art {
+                flex-shrink: 0;
+            }
         }
 
         .logo-art {
@@ -348,8 +388,14 @@
             word-break: break-word;
         }
 
-        .info-key { color: #89b4fa; font-weight: bold; }
-        .info-val { color: #cdd6f4; }
+        .info-key {
+            color: #89b4fa;
+            font-weight: bold;
+        }
+
+        .info-val {
+            color: #cdd6f4;
+        }
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -469,7 +515,8 @@
                         </div>
                     </a>
 
-                    <a href="https://music.youtube.com/channel/UCWoeBkasm_Jg-gAe7jWisJQ" class="social-card group">
+                    <a href="https://music.youtube.com/channel/UCWoeBkasm_Jg-gAe7jWisJQ" target="_blank"
+                        class="social-card group">
                         <div class="icon-container bg-gray-800/50">
                             <i data-feather="music" class="text-white"></i>
                         </div>
@@ -580,10 +627,409 @@
         <p>&copy; Jane Wirz <span id="current-year"></span></p>
     </footer>
 
-    <script src="script.js"></script>
-    <script src="oneko.js"></script>
     <script>
-        feather.replace();
+            // Oneko Logic
+            (function oneko() {
+                const isReducedMotion =
+                    window.matchMedia(`(prefers-reduced-motion: reduce)`) === true ||
+                    window.matchMedia(`(prefers-reduced-motion: reduce)`).matches === true;
+
+                if (isReducedMotion) return;
+
+                const nekoEl = document.createElement("div");
+                let persistPosition = true;
+
+                let nekoPosX = 32;
+                let nekoPosY = 32;
+
+                let mousePosX = 0;
+                let mousePosY = 0;
+
+                let frameCount = 0;
+                let idleTime = 0;
+                let idleAnimation = null;
+                let idleAnimationFrame = 0;
+
+                const nekoSpeed = 10;
+                const spriteSets = {
+                    idle: [[-3, -3]],
+                    alert: [[-7, -3]],
+                    scratchSelf: [[-5, 0], [-6, 0], [-7, 0]],
+                    scratchWallN: [[0, 0], [0, -1]],
+                    scratchWallS: [[-7, -1], [-6, -2]],
+                    scratchWallE: [[-2, -2], [-2, -3]],
+                    scratchWallW: [[-4, 0], [-4, -1]],
+                    tired: [[-3, -2]],
+                    sleeping: [[-2, 0], [-2, -1]],
+                    N: [[-1, -2], [-1, -3]],
+                    NE: [[0, -2], [0, -3]],
+                    E: [[-3, 0], [-3, -1]],
+                    SE: [[-5, -1], [-5, -2]],
+                    S: [[-6, -3], [-7, -2]],
+                    SW: [[-5, -3], [-6, -1]],
+                    W: [[-4, -2], [-4, -3]],
+                    NW: [[-1, 0], [-1, -1]],
+                };
+
+                function init() {
+                    let nekoFile = "./oneko.gif";
+
+                    if (persistPosition) {
+                        let storedNeko = JSON.parse(window.localStorage.getItem("oneko"));
+                        if (storedNeko !== null) {
+                            nekoPosX = storedNeko.nekoPosX;
+                            nekoPosY = storedNeko.nekoPosY;
+                            mousePosX = storedNeko.mousePosX;
+                            mousePosY = storedNeko.mousePosY;
+                            frameCount = storedNeko.frameCount;
+                            idleTime = storedNeko.idleTime;
+                            idleAnimation = storedNeko.idleAnimation;
+                            idleAnimationFrame = storedNeko.idleAnimationFrame;
+                            nekoEl.style.backgroundPosition = storedNeko.bgPos;
+                        }
+                    }
+
+                    nekoEl.id = "oneko";
+                    nekoEl.ariaHidden = true;
+                    nekoEl.style.width = "32px";
+                    nekoEl.style.height = "32px";
+                    nekoEl.style.position = "fixed";
+                    nekoEl.style.pointerEvents = "none";
+                    nekoEl.style.imageRendering = "pixelated";
+                    nekoEl.style.left = `${nekoPosX - 16}px`;
+                    nekoEl.style.top = `${nekoPosY - 16}px`;
+                    nekoEl.style.zIndex = 2147483647;
+                    nekoEl.style.backgroundImage = `url(${nekoFile})`;
+
+                    document.body.appendChild(nekoEl);
+
+                    document.addEventListener("mousemove", function (event) {
+                        mousePosX = event.clientX;
+                        mousePosY = event.clientY;
+                    });
+
+                    if (persistPosition) {
+                        window.addEventListener("beforeunload", function (event) {
+                            window.localStorage.setItem("oneko", JSON.stringify({
+                                nekoPosX: nekoPosX,
+                                nekoPosY: nekoPosY,
+                                mousePosX: mousePosX,
+                                mousePosY: mousePosY,
+                                frameCount: frameCount,
+                                idleTime: idleTime,
+                                idleAnimation: idleAnimation,
+                                idleAnimationFrame: idleAnimationFrame,
+                                bgPos: nekoEl.style.backgroundPosition
+                            }));
+                        });
+                    }
+                    window.requestAnimationFrame(onAnimationFrame);
+                }
+
+                let lastFrameTimestamp;
+                function onAnimationFrame(timestamp) {
+                    if (!nekoEl.isConnected) return;
+                    if (!lastFrameTimestamp) lastFrameTimestamp = timestamp;
+                    if (timestamp - lastFrameTimestamp > 100) {
+                        lastFrameTimestamp = timestamp;
+                        frame();
+                    }
+                    window.requestAnimationFrame(onAnimationFrame);
+                }
+
+                function setSprite(name, frame) {
+                    const sprite = spriteSets[name][frame % spriteSets[name].length];
+                    nekoEl.style.backgroundPosition = `${sprite[0] * 32}px ${sprite[1] * 32}px`;
+                }
+
+                function resetIdleAnimation() {
+                    idleAnimation = null;
+                    idleAnimationFrame = 0;
+                }
+
+                function idle() {
+                    idleTime += 1;
+                    if (idleTime > 10 && Math.floor(Math.random() * 200) == 0 && idleAnimation == null) {
+                        let avalibleIdleAnimations = ["sleeping", "scratchSelf"];
+                        if (nekoPosX < 32) avalibleIdleAnimations.push("scratchWallW");
+                        if (nekoPosY < 32) avalibleIdleAnimations.push("scratchWallN");
+                        if (nekoPosX > window.innerWidth - 32) avalibleIdleAnimations.push("scratchWallE");
+                        if (nekoPosY > window.innerHeight - 32) avalibleIdleAnimations.push("scratchWallS");
+                        idleAnimation = avalibleIdleAnimations[Math.floor(Math.random() * avalibleIdleAnimations.length)];
+                    }
+
+                    switch (idleAnimation) {
+                        case "sleeping":
+                            if (idleAnimationFrame < 8) { setSprite("tired", 0); break; }
+                            setSprite("sleeping", Math.floor(idleAnimationFrame / 4));
+                            if (idleAnimationFrame > 192) resetIdleAnimation();
+                            break;
+                        case "scratchWallN":
+                        case "scratchWallS":
+                        case "scratchWallE":
+                        case "scratchWallW":
+                        case "scratchSelf":
+                            setSprite(idleAnimation, idleAnimationFrame);
+                            if (idleAnimationFrame > 9) resetIdleAnimation();
+                            break;
+                        default:
+                            setSprite("idle", 0);
+                            return;
+                    }
+                    idleAnimationFrame += 1;
+                }
+
+                function frame() {
+                    frameCount += 1;
+                    const diffX = nekoPosX - mousePosX;
+                    const diffY = nekoPosY - mousePosY;
+                    const distance = Math.sqrt(diffX ** 2 + diffY ** 2);
+
+                    if (distance < nekoSpeed || distance < 48) {
+                        idle();
+                        return;
+                    }
+
+                    idleAnimation = null;
+                    idleAnimationFrame = 0;
+
+                    if (idleTime > 1) {
+                        setSprite("alert", 0);
+                        idleTime = Math.min(idleTime, 7);
+                        idleTime -= 1;
+                        return;
+                    }
+
+                    let direction = diffY / distance > 0.5 ? "N" : "";
+                    direction += diffY / distance < -0.5 ? "S" : "";
+                    direction += diffX / distance > 0.5 ? "W" : "";
+                    direction += diffX / distance < -0.5 ? "E" : "";
+                    setSprite(direction, frameCount);
+
+                    nekoPosX -= (diffX / distance) * nekoSpeed;
+                    nekoPosY -= (diffY / distance) * nekoSpeed;
+                    nekoPosX = Math.min(Math.max(16, nekoPosX), window.innerWidth - 16);
+                    nekoPosY = Math.min(Math.max(16, nekoPosY), window.innerHeight - 16);
+
+                    nekoEl.style.left = `${nekoPosX - 16}px`;
+                    nekoEl.style.top = `${nekoPosY - 16}px`;
+                }
+                init();
+            })();
+
+        // Main Script Logic
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+
+            const cards = document.querySelectorAll('.social-card, .project-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 + index * 100);
+            });
+
+            const yearElement = document.getElementById('current-year');
+            if (yearElement) {
+                yearElement.textContent = new Date().getFullYear();
+            }
+
+            // Typewriter
+            class Typewriter {
+                constructor(elementId, texts, waitTime = 3000) {
+                    this.element = document.getElementById(elementId);
+                    this.texts = texts;
+                    this.waitTime = waitTime;
+                    this.txt = '';
+                    this.wordIndex = 0;
+                    this.isDeleting = false;
+                    this.type();
+                    this.element.classList.add('cursor');
+                }
+
+                type() {
+                    const currentHook = this.wordIndex % this.texts.length;
+                    const fullTxt = this.texts[currentHook];
+                    if (this.isDeleting) {
+                        this.txt = fullTxt.substring(0, this.txt.length - 1);
+                    } else {
+                        this.txt = fullTxt.substring(0, this.txt.length + 1);
+                    }
+                    this.element.textContent = this.txt;
+                    let typeSpeed = 100;
+                    if (this.isDeleting) typeSpeed /= 2;
+                    if (!this.isDeleting && this.txt === fullTxt) {
+                        typeSpeed = this.waitTime;
+                        this.isDeleting = true;
+                    } else if (this.isDeleting && this.txt === '') {
+                        this.isDeleting = false;
+                        this.wordIndex++;
+                        typeSpeed = 500;
+                    }
+                    setTimeout(() => this.type(), typeSpeed);
+                }
+            }
+            new Typewriter('typewriter-text', ['Jane Wirz', 'bl4zee']);
+
+            // Age Counter
+            function updateAge() {
+                const ageElement = document.getElementById('age-display');
+                if (!ageElement) return;
+                const birthDate = new Date('2005-12-16');
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+                ageElement.textContent = age + ' years old';
+            }
+            updateAge();
+            setInterval(updateAge, 86400000);
+
+            // Terminal
+            const neofetchOutput = `
+                <div class="neofetch-output">
+                    <div class="logo-art">                   -\`
+                  .o+\`
+                 \`ooo/
+                \`+oooo:
+               \`+oooooo:
+               -+oooooo+:
+             \`/+:-:++oooo+:
+            \`/++++/+++++++:
+           \`/++++++++++++++:
+          \`/+++ooooooooooooo/\`
+         ./ooosssso++osssssso+\`
+        .oossssso-\`\`\`\`/ossssss+\`
+       -osssssso.      :ssssssso.
+      :osssssss/        osssso+++.
+     /ossssssss/        +ssssooo/-
+   \`/ossssso+/:-        -:/+osssso+-
+  \`+sso+:-                 \`.-/+oso:
+ \`++:.                           \`-/+/
+ .\`                                 \`/</div>
+                    <div class="sys-info">
+                        <div class="info-line"><span class="info-key">bl4zee</span><span class="info-val">@</span><span class="info-key">c0re</span></div>
+                        <div class="info-line">----------</div>
+                        <div class="info-line"><span class="info-key">OS</span>: <span class="info-val">Arch Linux x86_64</span></div>
+                        <div class="info-line"><span class="info-key">Host</span>: <span class="info-val">MS-7D75 1.0</span></div>
+                        <div class="info-line"><span class="info-key">Kernel</span>: <span class="info-val">6.17.9-arch1-1</span></div>
+                        <div class="info-line"><span class="info-key">Uptime</span>: <span class="info-val">9 hours, 56 mins</span></div>
+                        <div class="info-line"><span class="info-key">Packages</span>: <span class="info-val">1071 (pacman), 22 (flatpak)</span></div>
+                        <div class="info-line"><span class="info-key">Shell</span>: <span class="info-val">zsh 5.9</span></div>
+                        <div class="info-line"><span class="info-key">Resolution</span>: <span class="info-val">2560x1440, 2560x1440</span></div>
+                        <div class="info-line"><span class="info-key">WM</span>: <span class="info-val">Hyprland</span></div>
+                        <div class="info-line"><span class="info-key">Theme</span>: <span class="info-val">Catppuccin-Mocha [GTK2/3]</span></div>
+                        <div class="info-line"><span class="info-key">Icons</span>: <span class="info-val">Tela-circle-dracula [GTK2/3]</span></div>
+                        <div class="info-line"><span class="info-key">Cursor</span>: <span class="info-val">Bibata-Modern-Ice [GTK2/3]</span></div>
+                        <div class="info-line"><span class="info-key">Terminal</span>: <span class="info-val">kitty</span></div>
+                        <div class="info-line"><span class="info-key">Terminal Font</span>: <span class="info-val">CaskaydiaCove Nerd Font Mono 9.0</span></div>
+                        <div class="info-line"><span class="info-key">CPU</span>: <span class="info-val">AMD Ryzen 5 7600X (12) @ 5.457GHz</span></div>
+                        <div class="info-line"><span class="info-key">GPU</span>: <span class="info-val">AMD ATI Radeon RX 9070/9070 XT/9070 GRE</span></div>
+                        <div class="info-line"><span class="info-key">Memory</span>: <span class="info-val">12692 MiB / 31183 MiB</span></div>
+                        <div class="info-line"><br></div>
+                        <div class="info-line"><span class="terminal-dot dot-red"></span><span class="terminal-dot dot-green"></span><span class="terminal-dot dot-yellow"></span><span class="terminal-dot dot-red"></span><span class="terminal-dot dot-green"></span><span class="terminal-dot dot-yellow"></span></div>
+                    </div>
+                </div>`;
+
+            function executeCommand(container) {
+                const outputDiv = document.createElement('div');
+                outputDiv.innerHTML = neofetchOutput;
+                container.appendChild(outputDiv);
+                const newPrompt = document.createElement('div');
+                newPrompt.className = 'prompt';
+                newPrompt.innerHTML = `<span class="prompt-user">bl4zee</span><span class="prompt-at">@</span><span class="prompt-host">c0re</span><span class="prompt-path">~</span><span class="prompt-symbol">&gt;</span><span class="input-line"></span><span class="cursor-block"></span>`;
+                const prevCursor = container.querySelector('.prompt:not(:last-child) .cursor-block');
+                if (prevCursor) prevCursor.remove();
+                container.appendChild(newPrompt);
+                container.scrollTop = container.scrollHeight;
+            }
+
+            function startTyping(inputElement, containerElement) {
+                const text = "neofetch";
+                let index = 0;
+                inputElement.textContent = "";
+                function typeChar() {
+                    if (index < text.length) {
+                        inputElement.textContent += text.charAt(index);
+                        index++;
+                        setTimeout(typeChar, 100 + Math.random() * 100);
+                    } else {
+                        setTimeout(() => executeCommand(containerElement), 500);
+                    }
+                }
+                setTimeout(typeChar, 1000);
+            }
+
+            const terminalBody = document.getElementById('terminal-body');
+            const inputSpan = document.getElementById('terminal-input');
+            if (terminalBody && inputSpan) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect();
+                            startTyping(inputSpan, terminalBody);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                observer.observe(terminalBody);
+            }
+
+            // Carousel Autoscroll
+            const carousel = document.getElementById('connect-carousel');
+            if (carousel) {
+                let isPaused = false;
+                let isWaiting = false;
+                let scrollPos = 0;
+                let direction = 1;
+                const scrollSpeed = 0.15; // Slower speed
+                const pauseDuration = 3000; // 3 seconds
+
+                function step() {
+                    if (!isPaused && !isWaiting) {
+                        scrollPos += scrollSpeed * direction;
+                        const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+
+                        if (scrollPos >= maxScroll) {
+                            scrollPos = maxScroll;
+                            direction = -1;
+                            pause();
+                        } else if (scrollPos <= 0) {
+                            scrollPos = 0;
+                            direction = 1;
+                            pause();
+                        }
+                        carousel.scrollLeft = scrollPos;
+                    }
+                    requestAnimationFrame(step);
+                }
+
+                function pause() {
+                    isWaiting = true;
+                    setTimeout(() => {
+                        isWaiting = false;
+                    }, pauseDuration);
+                }
+
+                // Handle manual scroll synchronization
+                carousel.addEventListener('scroll', () => {
+                    if (isPaused) {
+                        // Update our internal position to match the manual scroll
+                        scrollPos = carousel.scrollLeft;
+                    }
+                });
+
+                carousel.addEventListener('mouseenter', () => isPaused = true);
+                carousel.addEventListener('mouseleave', () => {
+                    isPaused = false;
+                });
+                requestAnimationFrame(step);
+            }
+        });
     </script>
 </body>
 
