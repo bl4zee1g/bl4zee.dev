@@ -34,6 +34,8 @@
             overflow-x: auto;
             scroll-behavior: auto;
             padding: 1rem 40px;
+            -webkit-overflow-scrolling: touch;
+            will-change: scroll-position;
         }
 
         .carousel-wrapper::-webkit-scrollbar {
@@ -982,17 +984,25 @@
             // Carousel Autoscroll
             const carousel = document.getElementById('connect-carousel');
             if (carousel) {
-                let isPaused = false;
-                let isWaiting = false;
+                let isPaused = false;      // Hover pause
+                let isInteracting = false; // Touch/Click pause
+                let isWaiting = false;     // Edge pause
                 let scrollPos = 0;
                 let direction = 1;
-                const scrollSpeed = 0.15; // Slower speed
-                const pauseDuration = 3000; // 3 seconds
+                let resumeTimeout = null;
+                const scrollSpeed = 0.15;
+                const pauseDuration = 3000;
+                const resumeDelay = 2000;
 
                 function step() {
-                    if (!isPaused && !isWaiting) {
-                        scrollPos += scrollSpeed * direction;
+                    if (!isPaused && !isInteracting && !isWaiting) {
                         const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                        if (maxScroll <= 0) {
+                            requestAnimationFrame(step);
+                            return;
+                        }
+
+                        scrollPos += scrollSpeed * direction;
 
                         if (scrollPos >= maxScroll) {
                             scrollPos = maxScroll;
@@ -1015,18 +1025,34 @@
                     }, pauseDuration);
                 }
 
-                // Handle manual scroll synchronization
+                function handleInteractionStart() {
+                    isInteracting = true;
+                    if (resumeTimeout) clearTimeout(resumeTimeout);
+                }
+
+                function handleInteractionEnd() {
+                    if (resumeTimeout) clearTimeout(resumeTimeout);
+                    resumeTimeout = setTimeout(() => {
+                        isInteracting = false;
+                        scrollPos = carousel.scrollLeft;
+                    }, resumeDelay);
+                }
+
                 carousel.addEventListener('scroll', () => {
-                    if (isPaused) {
-                        // Update our internal position to match the manual scroll
+                    if (isInteracting) {
                         scrollPos = carousel.scrollLeft;
                     }
                 });
 
                 carousel.addEventListener('mouseenter', () => isPaused = true);
-                carousel.addEventListener('mouseleave', () => {
-                    isPaused = false;
-                });
+                carousel.addEventListener('mouseleave', () => isPaused = false);
+
+                carousel.addEventListener('touchstart', handleInteractionStart, { passive: true });
+                carousel.addEventListener('touchend', handleInteractionEnd, { passive: true });
+                carousel.addEventListener('touchcancel', handleInteractionEnd, { passive: true });
+                carousel.addEventListener('mousedown', handleInteractionStart);
+                carousel.addEventListener('mouseup', handleInteractionEnd);
+
                 requestAnimationFrame(step);
             }
         });
