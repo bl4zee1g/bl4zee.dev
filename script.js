@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let isPaused = false;      // Hover pause
         let isInteracting = false; // Touch/Click pause
         let isWaiting = false;     // Edge pause
+        let isOffScreen = false;   // Performance pause
         let scrollPos = 0;
         let direction = 1;
         let resumeTimeout = null;
@@ -173,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const resumeDelay = 2000;
 
         function step() {
-            if (!isPaused && !isInteracting && !isWaiting) {
+            if (!isPaused && !isInteracting && !isWaiting && !isOffScreen) {
                 const maxScroll = carousel.scrollWidth - carousel.clientWidth;
                 if (maxScroll <= 0) {
                     requestAnimationFrame(step);
@@ -203,6 +204,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }, pauseDuration);
         }
 
+        // Optimization: Pause when off-screen
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                isOffScreen = !entry.isIntersecting;
+                if (entry.isIntersecting) {
+                    scrollPos = carousel.scrollLeft;
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(carousel);
+
         function handleInteractionStart() {
             isInteracting = true;
             if (resumeTimeout) clearTimeout(resumeTimeout);
@@ -217,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         carousel.addEventListener('scroll', () => {
-            if (isInteracting || isPaused || isWaiting) {
+            if (isInteracting || isPaused || isWaiting || isOffScreen) {
                 scrollPos = carousel.scrollLeft;
             }
         });
