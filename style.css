@@ -24,11 +24,9 @@ body {
     gap: 1.5rem;
     overflow-x: auto;
     scroll-behavior: auto;
-    /* Required for precise JS control */
-    padding: 1rem 0;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    padding: 1rem 40px;
     -webkit-overflow-scrolling: touch;
+    will-change: scroll-position;
 }
 
 .carousel-wrapper::-webkit-scrollbar {
@@ -134,9 +132,7 @@ body {
 
 .badge-lavender {
     background: rgba(139, 92, 246, 0.15);
-    /* lavender-500 */
     color: #c4b5fd;
-    /* lavender-300 */
     border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
@@ -147,9 +143,7 @@ body {
 
 .badge-pastel {
     background: rgba(168, 85, 247, 0.15);
-    /* pastel-purple-500 */
     color: #d8b4fe;
-    /* pastel-purple-300 */
     border: 1px solid rgba(168, 85, 247, 0.3);
 }
 
@@ -160,9 +154,7 @@ body {
 
 .badge-deep {
     background: rgba(124, 58, 237, 0.15);
-    /* lavender-600 */
     color: #a78bfa;
-    /* lavender-400 */
     border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
@@ -227,7 +219,6 @@ body {
     content: '|';
     animation: blink 1s step-end infinite;
     color: #c4b5fd;
-    /* lavender-300 to match the gradient start */
     margin-left: 2px;
 }
 
@@ -246,7 +237,6 @@ body {
 /* Terminal Emulator */
 .terminal-window {
     background: #1e1e2e;
-    /* Catppuccin Mocha Base */
     border-radius: 0.75rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(139, 92, 246, 0.2);
@@ -259,7 +249,6 @@ body {
 
 .terminal-header {
     background: #181825;
-    /* Mantle */
     padding: 0.5rem 1rem;
     display: flex;
     align-items: center;
@@ -296,7 +285,6 @@ body {
 .terminal-body {
     padding: 1.5rem;
     color: #cdd6f4;
-    /* Text */
     font-size: 0.9rem;
     line-height: 1.5;
     overflow-x: auto;
@@ -315,7 +303,6 @@ body {
     font-weight: bold;
 }
 
-/* Blue */
 .prompt-at {
     color: #cdd6f4;
 }
@@ -329,12 +316,9 @@ body {
     color: #f5c2e7;
 }
 
-/* Pink */
 .prompt-symbol {
     color: #a6e3a1;
 }
-
-/* Green */
 
 .input-line {
     display: inline-block;
@@ -381,7 +365,6 @@ body {
 
 .logo-art {
     color: #89b4fa;
-    /* Arch Blue */
     font-weight: bold;
     white-space: pre;
     line-height: 1.2;
@@ -400,7 +383,6 @@ body {
 
 .info-key {
     color: #89b4fa;
-    /* Blue */
     font-weight: bold;
 }
 
