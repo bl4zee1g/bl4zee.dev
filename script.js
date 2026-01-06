@@ -169,8 +169,8 @@ document.addEventListener('DOMContentLoaded', function () {
         let scrollPos = 0;
         let direction = 1;
         let resumeTimeout = null;
-        const scrollSpeed = 0.15;
-        const pauseDuration = 3000;
+        const scrollSpeed = 0.5;
+        const pauseDuration = 1500;
         const resumeDelay = 2000;
 
         function step() {
