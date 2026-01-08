@@ -1,4 +1,4 @@
 haaiiii :3
 
-Credits for the cat gif:
+Credits for the oneko:
 https://github.com/adryd325/oneko.js
