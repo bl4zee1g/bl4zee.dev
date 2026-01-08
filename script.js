@@ -71,55 +71,56 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateAge, 86400000);
 
     // Terminal
-    const neofetchOutput = `
-                <div class="neofetch-output">
-                    <div class="logo-art">                   -\`
-                  .o+\`
-                 \`ooo/
-                \`+oooo:
-               \`+oooooo:
-               -+oooooo+:
-             \`/+:-:++oooo+:
-            \`/++++/+++++++:
-           \`/++++++++++++++:
-          \`/+++ooooooooooooo/\`
-         ./ooosssso++osssssso+\`
-        .oossssso-\`\`\`\`/ossssss+\`
-       -osssssso.      :ssssssso.
-      :osssssss/        osssso+++.
-     /ossssssss/        +ssssooo/-
-    \`/ossssso+/:-        -:/+osssso+-
-   \`+sso+:-                 \`.-/+oso:
-  \`++:.                           \`-/+/
-  .\`                                 \`/</div>
-                    <div class="sys-info">
-                        <div class="info-line"><span class="info-key">bl4zee</span><span class="info-val">@</span><span class="info-key">c0re</span></div>
-                        <div class="info-line">----------</div>
-                        <div class="info-line"><span class="info-key">OS</span>: <span class="info-val">Arch Linux x86_64</span></div>
-                        <div class="info-line"><span class="info-key">Host</span>: <span class="info-val">MS-7D75 1.0</span></div>
-                        <div class="info-line"><span class="info-key">Kernel</span>: <span class="info-val">6.17.9-arch1-1</span></div>
-                        <div class="info-line"><span class="info-key">Uptime</span>: <span class="info-val">9 hours, 56 mins</span></div>
-                        <div class="info-line"><span class="info-key">Packages</span>: <span class="info-val">1071 (pacman), 22 (flatpak)</span></div>
-                        <div class="info-line"><span class="info-key">Shell</span>: <span class="info-val">zsh 5.9</span></div>
-                        <div class="info-line"><span class="info-key">Resolution</span>: <span class="info-val">2560x1440, 2560x1440</span></div>
-                        <div class="info-line"><span class="info-key">WM</span>: <span class="info-val">Hyprland</span></div>
-                        <div class="info-line"><span class="info-key">Theme</span>: <span class="info-val">Catppuccin-Mocha [GTK2/3]</span></div>
-                        <div class="info-line"><span class="info-key">Icons</span>: <span class="info-val">Tela-circle-dracula [GTK2/3]</span></div>
-                        <div class="info-line"><span class="info-key">Cursor</span>: <span class="info-val">Bibata-Modern-Ice [GTK2/3]</span></div>
-                        <div class="info-line"><span class="info-key">Terminal</span>: <span class="info-val">kitty</span></div>
-                        <div class="info-line"><span class="info-key">Terminal Font</span>: <span class="info-val">CaskaydiaCove Nerd Font Mono 9.0</span></div>
-                        <div class="info-line"><span class="info-key">CPU</span>: <span class="info-val">AMD Ryzen 5 7600X (12) @ 5.457GHz</span></div>
-                        <div class="info-line"><span class="info-key">GPU</span>: <span class="info-val">AMD ATI Radeon RX 9070/9070 XT/9070 GRE</span></div>
-                        <div class="info-line"><span class="info-key">Memory</span>: <span class="info-val">12692 MiB / 31183 MiB</span></div>
-                        <div class="info-line"><br></div>
-                        <div class="info-line"><span class="terminal-dot dot-red"></span><span class="terminal-dot dot-green"></span><span class="terminal-dot dot-yellow"></span><span class="terminal-dot dot-red"></span><span class="terminal-dot dot-green"></span><span class="terminal-dot dot-yellow"></span></div>
-                    </div>
-                </div>`;
-
     function executeCommand(container) {
+        // Hardcoded due to local file fetch restrictions
+        const text = `           .-------------------------:                    bl4zee@c0re
+          .+=========================.                    -----------
+         :++===++==================-       :++-           OS: CachyOS x86_64
+        :*++====+++++=============-        .==:           Host: MS-7D75 (1.0)
+       -*+++=====+***++==========:                        Kernel: Linux 6.18.3-2-cachyos
+      =*++++========------------:                         Uptime: 50 mins
+     =*+++++=====-                     ...                Packages: 1204 (pacman)
+   .+*+++++=-===:                    .=+++=:              Shell: zsh 5.9
+  :++++=====-==:                     -*****+              Display (ROG PG279Q): 2560x1440 @ 1.33x in 27", 144 Hz [External]
+ :++========-=.                      .=+**+.              Display (AORUS FO27Q3): 2560x1440 @ 1.33x in 27", 360 Hz [External]
+.+==========-.                          .                 WM: Hyprland 0.53.1 (Wayland)
+ :+++++++====-                                .--==-.     Theme: wallbash [Qt], Catppuccin-Mocha [GTK2/3]
+  :++==========.                             :+++++++:    Icons: Tela-circle-dracula [Qt], Tela-circle-dracula [GTK2/3]
+   .-===========.                            =*****+*+    Font: Cantarell (10pt) [Qt], Cantarell (10pt) [GTK2/3]
+    .-===========:                           .+*****+:    Cursor: Bibata-Modern-Ice (24px)
+      -=======++++:::::::::::::::::::::::::-:  .---:      Terminal: kitty 0.45.0
+       :======++++====+++******************=.             Terminal Font: CaskaydiaCoveNFM-Regular (9pt)
+        :=====+++==========++++++++++++++*-               CPU: AMD Ryzen 5 7600X (12) @ 5.46 GHz
+         .====++==============++++++++++*-                GPU 1: AMD Radeon RX 9070 XT [Discrete]
+          .===+==================+++++++:                 GPU 2: AMD Raphael [Integrated]
+           .-=======================+++:                  Memory: 7.32 GiB / 30.45 GiB (24%)
+             ..........................                   Swap: 248.00 KiB / 30.45 GiB (0%)
+                                                          Disk (/): 61.44 GiB / 929.50 GiB (7%) - btrfs
+                                                          Disk (/mnt/data): 84.14 GiB / 228.17 GiB (37%) - ext4
+                                                          Local IP (enp14s0): 192.168.1.180/24
+                                                          Locale: en_US.UTF-8`;
+
         const outputDiv = document.createElement('div');
-        outputDiv.innerHTML = neofetchOutput;
+        outputDiv.className = 'neofetch-output';
+
+        // create pre element for proper formatting
+        const pre = document.createElement('pre');
+        pre.style.fontFamily = "'CaskaydiaCove Nerd Font Mono', 'JetBrains Mono', monospace";
+        pre.style.lineHeight = '1.2';
+        pre.style.whiteSpace = 'pre';
+        pre.style.margin = '0';
+        pre.style.overflowX = 'auto'; // handle potential overflow
+        pre.style.color = 'var(--terminal-text)';
+        pre.style.fontSize = '12px'; // Smaller font to prevent scrolling
+        pre.textContent = text; // Content is now safe
+
+        outputDiv.appendChild(pre);
         container.appendChild(outputDiv);
+
+        addPrompt(container);
+    }
+
+    function addPrompt(container) {
         const newPrompt = document.createElement('div');
         newPrompt.className = 'prompt';
         newPrompt.innerHTML = `<span class="prompt-user">bl4zee</span><span class="prompt-at">@</span><span class="prompt-host">c0re</span><span class="prompt-path">~</span><span class="prompt-symbol">&gt;</span><span class="input-line"></span><span class="cursor-block"></span>`;
@@ -130,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function startTyping(inputElement, containerElement) {
-        const text = "neofetch";
+        const text = "fastfetch";
         let index = 0;
         inputElement.textContent = "";
         function typeChar() {
