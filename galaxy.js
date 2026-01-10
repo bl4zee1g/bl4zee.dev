@@ -26,7 +26,7 @@ class GalaxyBackground {
 
     resize() {
         this.canvas.width = window.innerWidth;
-        this.canvas.height = document.documentElement.scrollHeight;
+        this.canvas.height = window.innerHeight;
     }
 
     createStars() {
