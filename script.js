@@ -77,15 +77,15 @@ document.addEventListener('DOMContentLoaded', function () {
           .+=========================.                    -----------
          :++===++==================-       :++-           OS: CachyOS x86_64
         :*++====+++++=============-        .==:           Host: MS-7D75 (1.0)
-       -*+++=====+***++==========:                        Kernel: Linux 6.18.3-2-cachyos
-      =*++++========------------:                         Uptime: 50 mins
-     =*+++++=====-                     ...                Packages: 1204 (pacman)
+       -*+++=====+***++==========:                        Kernel: Linux 6.18.5-2-cachyos
+      =*++++========------------:                         Uptime: 1 hour, 59 mins
+     =*+++++=====-                     ...                Packages: 1240 (pacman)
    .+*+++++=-===:                    .=+++=:              Shell: zsh 5.9
   :++++=====-==:                     -*****+              Display (ROG PG279Q): 2560x1440 @ 1.33x in 27", 144 Hz [External]
  :++========-=.                      .=+**+.              Display (AORUS FO27Q3): 2560x1440 @ 1.33x in 27", 360 Hz [External]
 .+==========-.                          .                 WM: Hyprland 0.53.1 (Wayland)
- :+++++++====-                                .--==-.     Theme: wallbash [Qt], Catppuccin-Mocha [GTK2/3]
-  :++==========.                             :+++++++:    Icons: Tela-circle-dracula [Qt], Tela-circle-dracula [GTK2/3]
+ :+++++++====-                                .--==-.     Theme: wallbash [Qt], Tokyo-Night [GTK2/3]
+  :++==========.                             :+++++++:    Icons: Tela-circle-purple [Qt], Tela-circle-purple [GTK2/3]
    .-===========.                            =*****+*+    Font: Cantarell (10pt) [Qt], Cantarell (10pt) [GTK2/3]
     .-===========:                           .+*****+:    Cursor: Bibata-Modern-Ice (24px)
       -=======++++:::::::::::::::::::::::::-:  .---:      Terminal: kitty 0.45.0
@@ -93,9 +93,9 @@ document.addEventListener('DOMContentLoaded', function () {
         :=====+++==========++++++++++++++*-               CPU: AMD Ryzen 5 7600X (12) @ 5.46 GHz
          .====++==============++++++++++*-                GPU 1: AMD Radeon RX 9070 XT [Discrete]
           .===+==================+++++++:                 GPU 2: AMD Raphael [Integrated]
-           .-=======================+++:                  Memory: 7.32 GiB / 30.45 GiB (24%)
-             ..........................                   Swap: 248.00 KiB / 30.45 GiB (0%)
-                                                          Disk (/): 61.44 GiB / 929.50 GiB (7%) - btrfs
+           .-=======================+++:                  Memory: 5.85 GiB / 30.45 GiB (19%)
+             ..........................                   Swap: 60.00 KiB / 30.45 GiB (0%)
+                                                          Disk (/): 79.22 GiB / 929.50 GiB (9%) - btrfs
                                                           Disk (/mnt/data): 84.14 GiB / 228.17 GiB (37%) - ext4
                                                           Local IP (enp14s0): 192.168.1.180/24
                                                           Locale: en_US.UTF-8`;
