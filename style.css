@@ -46,17 +46,19 @@
     --badge-deep-hover-bg: rgba(124, 58, 237, 0.25);
     --badge-deep-hover-border: rgba(124, 58, 237, 0.5);
 
-    /* Terminal Colors (Catppuccin Mocha) */
-    --terminal-bg: #1e1e2e;
-    --terminal-header: #181825;
-    --terminal-text: #cdd6f4;
-    --terminal-border: rgba(139, 92, 246, 0.2);
-    --terminal-dot-red: #f38ba8;
-    --terminal-dot-yellow: #f9e2af;
-    --terminal-dot-green: #a6e3a1;
-    --terminal-title: #a6adc8;
-    --terminal-user: #89b4fa;
-    --terminal-path: #f5c2e7;
+    /* Terminal Colors (Tokyo Night) */
+    --terminal-bg: #1a1b26;
+    --terminal-header: #16161e;
+    --terminal-text: #c0caf5;
+    --terminal-border: rgba(122, 162, 247, 0.2);
+    --terminal-dot-red: #f7768e;
+    --terminal-dot-yellow: #e0af68;
+    --terminal-dot-green: #9ece6a;
+    --terminal-title: #565f89;
+    --terminal-user: #7aa2f7;
+    --terminal-path: #bb9af7;
+    --terminal-cyan: #7dcfff;
+    --terminal-green: #9ece6a;
 
     /* Scrollbar */
     --scrollbar-track: rgba(30, 41, 59, 0.5);
@@ -370,12 +372,12 @@ main {
 }
 
 .terminal-body {
-    padding: 1.5rem;
+    padding: 1rem 1.5rem;
     color: var(--terminal-text);
     font-size: 0.9rem;
-    line-height: 1.5;
+    line-height: 1.2;
     overflow-x: auto;
-    min-height: 680px;
+    min-height: 560px;
 }
 
 .prompt {

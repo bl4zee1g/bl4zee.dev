@@ -1,17 +1,45 @@
+const CONFIG = {
+    birthDate: '2005-12-16',
+    typewriterTexts: ['Jane Wirz', 'bl4zee'],
+    terminalCommand: 'fastfetch',
+    revealOffset: '20px',
+    revealThreshold: 0.1
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof feather !== 'undefined') {
         feather.replace();
     }
 
-    const cards = document.querySelectorAll('.social-card, .project-card');
+    // Reveal Animations using IntersectionObserver
+    const revealCallback = (entries, observer) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                const element = entry.target;
+                const delay = element.dataset.delay || 0;
+
+                setTimeout(() => {
+                    element.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, delay);
+
+                observer.unobserve(element);
+            }
+        });
+    };
+
+    const revealObserver = new IntersectionObserver(revealCallback, {
+        threshold: CONFIG.revealThreshold
+    });
+
+    const cards = document.querySelectorAll('.social-card, .project-card, .text-center, .terminal-window');
     cards.forEach((card, index) => {
         card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, 100 + index * 100);
+        card.style.transform = `translateY(${CONFIG.revealOffset})`;
+        // Add staggered delay based on index for elements near each other
+        card.dataset.delay = (index % 4) * 100;
+        revealObserver.observe(card);
     });
 
     const yearElement = document.getElementById('current-year');
@@ -23,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
     class Typewriter {
         constructor(elementId, texts, waitTime = 3000) {
             this.element = document.getElementById(elementId);
+            if (!this.element) return;
             this.texts = texts;
             this.waitTime = waitTime;
             this.txt = '';
@@ -35,14 +64,18 @@ document.addEventListener('DOMContentLoaded', function () {
         type() {
             const currentHook = this.wordIndex % this.texts.length;
             const fullTxt = this.texts[currentHook];
+
             if (this.isDeleting) {
                 this.txt = fullTxt.substring(0, this.txt.length - 1);
             } else {
                 this.txt = fullTxt.substring(0, this.txt.length + 1);
             }
+
             this.element.textContent = this.txt;
+
             let typeSpeed = 100;
             if (this.isDeleting) typeSpeed /= 2;
+
             if (!this.isDeleting && this.txt === fullTxt) {
                 typeSpeed = this.waitTime;
                 this.isDeleting = true;
@@ -51,16 +84,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.wordIndex++;
                 typeSpeed = 500;
             }
+
             setTimeout(() => this.type(), typeSpeed);
         }
     }
-    new Typewriter('typewriter-text', ['Jane Wirz', 'bl4zee']);
+    new Typewriter('typewriter-text', CONFIG.typewriterTexts);
 
     // Age Counter
     function updateAge() {
         const ageElement = document.getElementById('age-display');
         if (!ageElement) return;
-        const birthDate = new Date('2005-12-16');
+        const birthDate = new Date(CONFIG.birthDate);
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const m = today.getMonth() - birthDate.getMonth();
@@ -70,180 +104,201 @@ document.addEventListener('DOMContentLoaded', function () {
     updateAge();
     setInterval(updateAge, 86400000);
 
-    // Terminal
-    function executeCommand(container) {
-        // Hardcoded due to local file fetch restrictions
-        const text = `           .-------------------------:                    bl4zee@c0re
-          .+=========================.                    -----------
-         :++===++==================-       :++-           OS: CachyOS x86_64
-        :*++====+++++=============-        .==:           Host: MS-7D75 (1.0)
-       -*+++=====+***++==========:                        Kernel: Linux 6.18.5-2-cachyos
-      =*++++========------------:                         Uptime: 1 hour, 59 mins
-     =*+++++=====-                     ...                Packages: 1240 (pacman)
-   .+*+++++=-===:                    .=+++=:              Shell: zsh 5.9
-  :++++=====-==:                     -*****+              Display (ROG PG279Q): 2560x1440 @ 1.33x in 27", 144 Hz [External]
- :++========-=.                      .=+**+.              Display (AORUS FO27Q3): 2560x1440 @ 1.33x in 27", 360 Hz [External]
-.+==========-.                          .                 WM: Hyprland 0.53.1 (Wayland)
- :+++++++====-                                .--==-.     Theme: wallbash [Qt], Tokyo-Night [GTK2/3]
-  :++==========.                             :+++++++:    Icons: Tela-circle-purple [Qt], Tela-circle-purple [GTK2/3]
-   .-===========.                            =*****+*+    Font: Cantarell (10pt) [Qt], Cantarell (10pt) [GTK2/3]
-    .-===========:                           .+*****+:    Cursor: Bibata-Modern-Ice (24px)
-      -=======++++:::::::::::::::::::::::::-:  .---:      Terminal: kitty 0.45.0
-       :======++++====+++******************=.             Terminal Font: CaskaydiaCoveNFM-Regular (9pt)
-        :=====+++==========++++++++++++++*-               CPU: AMD Ryzen 5 7600X (12) @ 5.46 GHz
-         .====++==============++++++++++*-                GPU 1: AMD Radeon RX 9070 XT [Discrete]
-          .===+==================+++++++:                 GPU 2: AMD Raphael [Integrated]
-           .-=======================+++:                  Memory: 5.85 GiB / 30.45 GiB (19%)
-             ..........................                   Swap: 60.00 KiB / 30.45 GiB (0%)
-                                                          Disk (/): 79.22 GiB / 929.50 GiB (9%) - btrfs
-                                                          Disk (/mnt/data): 84.14 GiB / 228.17 GiB (37%) - ext4
-                                                          Local IP (enp14s0): 192.168.1.180/24
-                                                          Locale: en_US.UTF-8`;
-
-        const outputDiv = document.createElement('div');
-        outputDiv.className = 'neofetch-output';
-
-        // create pre element for proper formatting
-        const pre = document.createElement('pre');
-        pre.style.fontFamily = "'CaskaydiaCove Nerd Font Mono', 'JetBrains Mono', monospace";
-        pre.style.lineHeight = '1.2';
-        pre.style.whiteSpace = 'pre';
-        pre.style.margin = '0';
-        pre.style.overflowX = 'auto'; // handle potential overflow
-        pre.style.color = 'var(--terminal-text)';
-        pre.style.fontSize = '12px'; // Smaller font to prevent scrolling
-        pre.textContent = text; // Content is now safe
-
-        outputDiv.appendChild(pre);
-        container.appendChild(outputDiv);
-
-        addPrompt(container);
-    }
-
-    function addPrompt(container) {
-        const newPrompt = document.createElement('div');
-        newPrompt.className = 'prompt';
-        newPrompt.innerHTML = `<span class="prompt-user">bl4zee</span><span class="prompt-at">@</span><span class="prompt-host">c0re</span><span class="prompt-path">~</span><span class="prompt-symbol">&gt;</span><span class="input-line"></span><span class="cursor-block"></span>`;
-        const prevCursor = container.querySelector('.prompt:not(:last-child) .cursor-block');
-        if (prevCursor) prevCursor.remove();
-        container.appendChild(newPrompt);
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function startTyping(inputElement, containerElement) {
-        const text = "fastfetch";
-        let index = 0;
-        inputElement.textContent = "";
-        function typeChar() {
-            if (index < text.length) {
-                inputElement.textContent += text.charAt(index);
-                index++;
-                setTimeout(typeChar, 100 + Math.random() * 100);
-            } else {
-                setTimeout(() => executeCommand(containerElement), 500);
+    // Terminal Logic
+    const Terminal = {
+        async execute(container) {
+            let text = "";
+            try {
+                const response = await fetch('fastfetch.txt');
+                if (!response.ok) throw new Error('Failed to load');
+                text = await response.text();
+            } catch (error) {
+                console.error('Error fetching fastfetch.txt:', error);
+                text = "Error: Could not load terminal output.";
             }
+
+            const outputDiv = document.createElement('div');
+            outputDiv.className = 'neofetch-output';
+
+            const processedLines = text.split('\n').map(line => this.processLine(line));
+
+            const pre = document.createElement('pre');
+            Object.assign(pre.style, {
+                fontFamily: "'CaskaydiaCove Nerd Font Mono', 'JetBrains Mono', monospace",
+                lineHeight: '1.2',
+                whiteSpace: 'pre',
+                margin: '0',
+                overflowX: 'auto',
+                color: 'var(--terminal-text)',
+                fontSize: '12px'
+            });
+
+            pre.innerHTML = processedLines.join('\n');
+            outputDiv.appendChild(pre);
+            container.appendChild(outputDiv);
+            this.addPrompt(container);
+        },
+
+        processLine(line) {
+            let safeLine = line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // User@Host
+            if (safeLine.includes('@') && !safeLine.includes(': ')) {
+                const match = safeLine.match(/^(.*?)(\s+)([^\s]+@[^\s]+)$/);
+                if (match) {
+                    return `<span style="color: var(--terminal-cyan)">${match[1]}</span>${match[2]}<span style="color: var(--terminal-cyan); text-decoration: underline; font-weight: bold;">${match[3]}</span>`;
+                }
+            }
+
+            // Dhashes
+            if (safeLine.includes('-----------')) {
+                const match = safeLine.match(/^(.*?)(\s+)(-----------)$/);
+                if (match) {
+                    return `<span style="color: var(--terminal-cyan)">${match[1]}</span>${match[2]}<span style="color: var(--terminal-cyan)">${match[3]}</span>`;
+                }
+            }
+
+            // Key: Value
+            if (safeLine.includes(': ')) {
+                const match = safeLine.match(/^(.*?)(\s{5,})([A-Za-z0-9\s(/)]+:\s+)(.*)$/);
+                if (match) {
+                    const valPart = match[4].replace(/(\(\d+%\))/g, '<span style="color: var(--terminal-green)">$1</span>');
+                    return `<span style="color: var(--terminal-cyan)">${match[1]}</span>${match[2]}<span style="color: var(--terminal-cyan); font-weight: bold;">${match[3]}</span><span style="color: var(--terminal-text)">${valPart}</span>`;
+                }
+            }
+
+            return `<span style="color: var(--terminal-cyan)">${safeLine}</span>`;
+        },
+
+        addPrompt(container) {
+            const newPrompt = document.createElement('div');
+            newPrompt.className = 'prompt';
+            newPrompt.innerHTML = `<span class="prompt-symbol" style="color: var(--terminal-cyan)">^</span> <span class="prompt-path" style="color: var(--terminal-path)">~</span> <span class="prompt-symbol" style="color: var(--terminal-dot-green)">&gt;</span> <span class="input-line"></span><span class="cursor-block"></span>`;
+
+            const prevCursor = container.querySelector('.prompt:not(:last-child) .cursor-block');
+            if (prevCursor) prevCursor.remove();
+
+            container.appendChild(newPrompt);
+            container.scrollTop = container.scrollHeight;
+        },
+
+        startTyping(inputElement, containerElement) {
+            const text = CONFIG.terminalCommand;
+            let index = 0;
+            inputElement.textContent = "";
+
+            const typeChar = () => {
+                if (index < text.length) {
+                    inputElement.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(typeChar, 100 + Math.random() * 100);
+                } else {
+                    setTimeout(() => this.execute(containerElement), 500);
+                }
+            };
+            setTimeout(typeChar, 1000);
         }
-        setTimeout(typeChar, 1000);
-    }
+    };
 
     const terminalBody = document.getElementById('terminal-body');
     const inputSpan = document.getElementById('terminal-input');
+
     if (terminalBody && inputSpan) {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    observer.disconnect();
-                    startTyping(inputSpan, terminalBody);
-                }
-            });
+        const termObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                termObserver.disconnect();
+                Terminal.startTyping(inputSpan, terminalBody);
+            }
         }, { threshold: 0.1 });
-        observer.observe(terminalBody);
+        termObserver.observe(terminalBody);
     }
 
-    // Carousel Autoscroll
-    const carousel = document.getElementById('connect-carousel');
-    if (carousel) {
-        let isPaused = false;      // Hover pause
-        let isInteracting = false; // Touch/Click pause
-        let isWaiting = false;     // Edge pause
-        let isOffScreen = false;   // Performance pause
-        let scrollPos = 0;
-        let direction = 1;
-        let resumeTimeout = null;
-        const scrollSpeed = 0.5;
-        const pauseDuration = 1500;
-        const resumeDelay = 2000;
+    // Carousel Autoscroll Logic
+    const Carousel = {
+        init() {
+            const carousel = document.getElementById('connect-carousel');
+            if (!carousel) return;
 
-        function step() {
-            if (!isPaused && !isInteracting && !isWaiting && !isOffScreen) {
-                const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-                if (maxScroll <= 0) {
-                    requestAnimationFrame(step);
-                    return;
+            this.carousel = carousel;
+            this.isPaused = false;
+            this.isInteracting = false;
+            this.isWaiting = false;
+            this.isOffScreen = false;
+            this.scrollPos = 0;
+            this.direction = 1;
+            this.resumeTimeout = null;
+            this.scrollSpeed = 0.5;
+            this.pauseDuration = 1500;
+            this.resumeDelay = 2000;
+
+            this.setupObserver();
+            this.setupListeners();
+            requestAnimationFrame(() => this.step());
+        },
+
+        step() {
+            if (!this.isPaused && !this.isInteracting && !this.isWaiting && !this.isOffScreen) {
+                const maxScroll = this.carousel.scrollWidth - this.carousel.clientWidth;
+                if (maxScroll > 0) {
+                    this.scrollPos += this.scrollSpeed * this.direction;
+
+                    if (this.scrollPos >= maxScroll) {
+                        this.scrollPos = maxScroll;
+                        this.direction = -1;
+                        this.pause();
+                    } else if (this.scrollPos <= 0) {
+                        this.scrollPos = 0;
+                        this.direction = 1;
+                        this.pause();
+                    }
+                    this.carousel.scrollLeft = this.scrollPos;
                 }
-
-                scrollPos += scrollSpeed * direction;
-
-                if (scrollPos >= maxScroll) {
-                    scrollPos = maxScroll;
-                    direction = -1;
-                    pause();
-                } else if (scrollPos <= 0) {
-                    scrollPos = 0;
-                    direction = 1;
-                    pause();
-                }
-                carousel.scrollLeft = scrollPos;
             }
-            requestAnimationFrame(step);
-        }
+            requestAnimationFrame(() => this.step());
+        },
 
-        function pause() {
-            isWaiting = true;
-            setTimeout(() => {
-                isWaiting = false;
-            }, pauseDuration);
-        }
+        pause() {
+            this.isWaiting = true;
+            setTimeout(() => this.isWaiting = false, this.pauseDuration);
+        },
 
-        // Optimization: Pause when off-screen
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                isOffScreen = !entry.isIntersecting;
-                if (entry.isIntersecting) {
-                    scrollPos = carousel.scrollLeft;
+        setupObserver() {
+            const obs = new IntersectionObserver((entries) => {
+                this.isOffScreen = !entries[0].isIntersecting;
+                if (entries[0].isIntersecting) {
+                    this.scrollPos = this.carousel.scrollLeft;
+                }
+            }, { threshold: 0.1 });
+            obs.observe(this.carousel);
+        },
+
+        setupListeners() {
+            const handleStart = () => {
+                this.isInteracting = true;
+                if (this.resumeTimeout) clearTimeout(this.resumeTimeout);
+            };
+
+            const handleEnd = () => {
+                if (this.resumeTimeout) clearTimeout(this.resumeTimeout);
+                this.resumeTimeout = setTimeout(() => {
+                    this.isInteracting = false;
+                    this.scrollPos = this.carousel.scrollLeft;
+                }, this.resumeDelay);
+            };
+
+            this.carousel.addEventListener('mouseenter', () => this.isPaused = true);
+            this.carousel.addEventListener('mouseleave', () => this.isPaused = false);
+            this.carousel.addEventListener('touchstart', handleStart, { passive: true });
+            this.carousel.addEventListener('touchend', handleEnd, { passive: true });
+            this.carousel.addEventListener('mousedown', handleStart);
+            this.carousel.addEventListener('mouseup', handleEnd);
+            this.carousel.addEventListener('scroll', () => {
+                if (this.isInteracting || this.isPaused || this.isWaiting || this.isOffScreen) {
+                    this.scrollPos = this.carousel.scrollLeft;
                 }
             });
-        }, { threshold: 0.1 });
-        observer.observe(carousel);
-
-        function handleInteractionStart() {
-            isInteracting = true;
-            if (resumeTimeout) clearTimeout(resumeTimeout);
         }
+    };
 
-        function handleInteractionEnd() {
-            if (resumeTimeout) clearTimeout(resumeTimeout);
-            resumeTimeout = setTimeout(() => {
-                isInteracting = false;
-                scrollPos = carousel.scrollLeft;
-            }, resumeDelay);
-        }
-
-        carousel.addEventListener('scroll', () => {
-            if (isInteracting || isPaused || isWaiting || isOffScreen) {
-                scrollPos = carousel.scrollLeft;
-            }
-        });
-
-        carousel.addEventListener('mouseenter', () => isPaused = true);
-        carousel.addEventListener('mouseleave', () => isPaused = false);
-
-        carousel.addEventListener('touchstart', handleInteractionStart, { passive: true });
-        carousel.addEventListener('touchend', handleInteractionEnd, { passive: true });
-        carousel.addEventListener('touchcancel', handleInteractionEnd, { passive: true });
-        carousel.addEventListener('mousedown', handleInteractionStart);
-        carousel.addEventListener('mouseup', handleInteractionEnd);
-
-        requestAnimationFrame(step);
-    }
+    Carousel.init();
 });
