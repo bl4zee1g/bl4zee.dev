@@ -3,7 +3,8 @@ const CONFIG = {
     typewriterTexts: ['Jane Wirz', 'bl4zee'],
     terminalCommand: 'fastfetch',
     revealOffset: '20px',
-    revealThreshold: 0.1
+    revealThreshold: 0.1,
+    discordUserId: '502866937617973260'
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -301,4 +302,242 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     Carousel.init();
+
+    // Lanyard Discord Presence Integration
+    const Lanyard = {
+        userId: CONFIG.discordUserId,
+        ws: null,
+        heartbeatInterval: null,
+        spotifyInterval: null,
+        currentData: null,
+
+        init() {
+            this.connect();
+        },
+
+        connect() {
+            this.ws = new WebSocket('wss://api.lanyard.rest/socket');
+
+            this.ws.onopen = () => {
+                console.log('Lanyard WebSocket connected');
+            };
+
+            this.ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                this.handleMessage(data);
+            };
+
+            this.ws.onclose = () => {
+                console.log('Lanyard WebSocket closed, reconnecting...');
+                clearInterval(this.heartbeatInterval);
+                clearInterval(this.spotifyInterval);
+                setTimeout(() => this.connect(), 5000);
+            };
+
+            this.ws.onerror = (error) => {
+                console.error('Lanyard WebSocket error:', error);
+            };
+        },
+
+        handleMessage(data) {
+            switch (data.op) {
+                case 1: // Hello
+                    this.heartbeatInterval = setInterval(() => {
+                        this.ws.send(JSON.stringify({ op: 3 }));
+                    }, data.d.heartbeat_interval);
+
+                    // Subscribe to user
+                    this.ws.send(JSON.stringify({
+                        op: 2,
+                        d: { subscribe_to_id: this.userId }
+                    }));
+                    break;
+
+                case 0: // Event
+                    if (data.t === 'INIT_STATE' || data.t === 'PRESENCE_UPDATE') {
+                        this.currentData = data.d;
+                        this.render(data.d);
+                        this.startSpotifyProgress();
+                    }
+                    break;
+            }
+        },
+
+        startSpotifyProgress() {
+            clearInterval(this.spotifyInterval);
+            if (this.currentData?.listening_to_spotify && this.currentData?.spotify) {
+                this.spotifyInterval = setInterval(() => {
+                    this.updateSpotifyProgress();
+                }, 1000);
+            }
+        },
+
+        updateSpotifyProgress() {
+            if (!this.currentData?.spotify) return;
+
+            const { timestamps } = this.currentData.spotify;
+            const now = Date.now();
+            const start = timestamps.start;
+            const end = timestamps.end;
+            const duration = end - start;
+            const elapsed = now - start;
+            const progress = Math.min((elapsed / duration) * 100, 100);
+
+            const progressFill = document.querySelector('.spotify-progress-fill');
+            const currentTime = document.querySelector('.spotify-current-time');
+
+            if (progressFill) {
+                progressFill.style.width = `${progress}%`;
+            }
+            if (currentTime) {
+                currentTime.textContent = this.formatTime(elapsed);
+            }
+        },
+
+        formatTime(ms) {
+            const seconds = Math.floor((ms / 1000) % 60);
+            const minutes = Math.floor((ms / 1000 / 60) % 60);
+            return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        },
+
+        getStatusText(status) {
+            const statuses = {
+                online: 'Online',
+                idle: 'Idle',
+                dnd: 'Do Not Disturb',
+                offline: 'Offline'
+            };
+            return statuses[status] || 'Unknown';
+        },
+
+        getAvatarUrl(data) {
+            if (data.discord_user.avatar) {
+                const ext = data.discord_user.avatar.startsWith('a_') ? 'gif' : 'png';
+                return `https://cdn.discordapp.com/avatars/${data.discord_user.id}/${data.discord_user.avatar}.${ext}?size=256`;
+            }
+            return `https://cdn.discordapp.com/embed/avatars/${parseInt(data.discord_user.discriminator) % 5}.png`;
+        },
+
+        getActivityImage(activity) {
+            if (activity.assets?.large_image) {
+                if (activity.assets.large_image.startsWith('mp:external/')) {
+                    return `https://media.discordapp.net/external/${activity.assets.large_image.replace('mp:external/', '')}`;
+                }
+                if (activity.assets.large_image.startsWith('spotify:')) {
+                    return `https://i.scdn.co/image/${activity.assets.large_image.replace('spotify:', '')}`;
+                }
+                return `https://cdn.discordapp.com/app-assets/${activity.application_id}/${activity.assets.large_image}.png`;
+            }
+            return null;
+        },
+
+        render(data) {
+            const container = document.getElementById('discord-presence');
+            if (!container) return;
+
+            const avatarUrl = this.getAvatarUrl(data);
+            const status = data.discord_status;
+            const username = data.discord_user.global_name || data.discord_user.username;
+
+            let activitiesHtml = '';
+
+            // Spotify Activity
+            if (data.listening_to_spotify && data.spotify) {
+                const spotify = data.spotify;
+                const progress = this.calculateProgress(spotify.timestamps);
+                const duration = spotify.timestamps.end - spotify.timestamps.start;
+
+                activitiesHtml += `
+                    <div class="activity-card spotify">
+                        <img src="${spotify.album_art_url}" alt="Album Art" class="activity-image">
+                        <div class="activity-info">
+                            <div class="activity-type">🎵 Listening to Spotify</div>
+                            <div class="activity-name">${this.escapeHtml(spotify.song)}</div>
+                            <div class="activity-details">by ${this.escapeHtml(spotify.artist)}</div>
+                            <div class="activity-state">on ${this.escapeHtml(spotify.album)}</div>
+                            <div class="spotify-progress-container">
+                                <div class="spotify-progress-bar">
+                                    <div class="spotify-progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                                <div class="spotify-progress-time">
+                                    <span class="spotify-current-time">${this.formatTime(Date.now() - spotify.timestamps.start)}</span>
+                                    <span>${this.formatTime(duration)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Other Activities (games, etc.)
+            const activities = data.activities?.filter(a => a.type !== 4 && a.name !== 'Spotify') || [];
+            for (const activity of activities) {
+                const imageUrl = this.getActivityImage(activity);
+                const typeLabel = this.getActivityTypeLabel(activity.type);
+
+                activitiesHtml += `
+                    <div class="activity-card">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${this.escapeHtml(activity.name)}" class="activity-image">` : ''}
+                        <div class="activity-info">
+                            <div class="activity-type">${typeLabel}</div>
+                            <div class="activity-name">${this.escapeHtml(activity.name)}</div>
+                            ${activity.details ? `<div class="activity-details">${this.escapeHtml(activity.details)}</div>` : ''}
+                            ${activity.state ? `<div class="activity-state">${this.escapeHtml(activity.state)}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (!activitiesHtml) {
+                activitiesHtml = '<div class="no-activities">Not doing anything right now</div>';
+            }
+
+            container.innerHTML = `
+                <div class="discord-profile">
+                    <div class="discord-avatar-wrapper">
+                        <img src="${avatarUrl}" alt="${this.escapeHtml(username)}" class="discord-avatar">
+                        <div class="discord-status-indicator ${status}"></div>
+                    </div>
+                    <div class="discord-info">
+                        <div class="discord-username">${this.escapeHtml(username)}</div>
+                        <div class="discord-status-text">
+                            <span class="status-dot ${status}"></span>
+                            ${this.getStatusText(status)}
+                        </div>
+                        <div class="discord-activities">
+                            ${activitiesHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        },
+
+        getActivityTypeLabel(type) {
+            const types = {
+                0: '🎮 Playing',
+                1: '📡 Streaming',
+                2: '🎵 Listening to',
+                3: '📺 Watching',
+                5: '🏆 Competing in'
+            };
+            return types[type] || '🎯 Activity';
+        },
+
+        calculateProgress(timestamps) {
+            const now = Date.now();
+            const start = timestamps.start;
+            const end = timestamps.end;
+            const duration = end - start;
+            const elapsed = now - start;
+            return Math.min((elapsed / duration) * 100, 100);
+        },
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    };
+
+    Lanyard.init();
 });
