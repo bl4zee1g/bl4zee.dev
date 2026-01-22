@@ -706,8 +706,29 @@ main {
         text-align: center;
     }
     
+    .discord-avatar-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto;
+    }
+    
     .discord-status-text {
         justify-content: center;
+    }
+    
+    .discord-info {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .discord-activities {
+        width: 100%;
     }
     
     .discord-avatar {
@@ -716,9 +737,30 @@ main {
     }
     
     .discord-status-indicator {
-        width: 28px;
-        height: 28px;
-        bottom: 4px;
-        right: 4px;
+        width: 24px;
+        height: 24px;
+        bottom: 0;
+        right: 0;
+    }
+    
+    .activity-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    .activity-image {
+        margin: 0 auto;
+    }
+    
+    .activity-info {
+        width: 100%;
+    }
+    
+    .activity-name,
+    .activity-details,
+    .activity-state {
+        white-space: normal;
+        word-break: break-word;
     }
 }
