@@ -493,21 +493,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             container.innerHTML = `
-                <div class="discord-profile">
-                    <div class="discord-avatar-wrapper">
-                        <img src="${avatarUrl}" alt="${this.escapeHtml(username)}" class="discord-avatar">
-                        <div class="discord-status-indicator ${status}"></div>
-                    </div>
-                    <div class="discord-info">
-                        <div class="discord-username">${this.escapeHtml(username)}</div>
-                        <div class="discord-status-text">
-                            <span class="status-dot ${status}"></span>
-                            ${this.getStatusText(status)}
-                        </div>
-                        <div class="discord-activities">
-                            ${activitiesHtml}
-                        </div>
-                    </div>
+                <div class="discord-activities">
+                    ${activitiesHtml}
                 </div>
             `;
         },
