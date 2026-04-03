@@ -1,26 +1,25 @@
            .-------------------------:                    bl4zee@c0re
           .+=========================.                    -----------
          :++===++==================-       :++-           OS: CachyOS x86_64
-        :*++====+++++=============-        .==:           Host: MS-7D75 (1.0)
-       -*+++=====+***++==========:                        Kernel: Linux 6.19.3-2-cachyos
-      =*++++========------------:                         Uptime: 6 hours, 9 mins
-     =*+++++=====-                     ...                Packages: 1271 (pacman)
-   .+*+++++=-===:                    .=+++=:              Shell: zsh 5.9
-  :++++=====-==:                     -*****+              Display (ROG PG279Q): 2560x1440 @ 1.33x in 27", 144 Hz [External]
- :++========-=.                      .=+**+.              Display (AORUS FO27Q3): 2560x1440 @ 1.33x in 27", 360 Hz [External]
-.+==========-.                          .                 WM: Hyprland 0.53.3 (Wayland)
- :+++++++====-                                .--==-.     Theme: wallbash [Qt], Tokyo-Night [GTK2/3]
-  :++==========.                             :+++++++:    Icons: Tela-circle-purple [Qt], Tela-circle-purple [GTK2/3]
-   .-===========.                            =*****+*+    Font: Cantarell (10pt) [Qt], Cantarell (10pt) [GTK2/3]
-    .-===========:                           .+*****+:    Cursor: Bibata-Modern-Ice (24px)
-      -=======++++:::::::::::::::::::::::::-:  .---:      Terminal: kitty 0.45.0
-       :======++++====+++******************=.             Terminal Font: CaskaydiaCoveNFM-Regular (9pt)
-        :=====+++==========++++++++++++++*-               CPU: AMD Ryzen 5 7600X (12) @ 5.46 GHz
-         .====++==============++++++++++*-                GPU 1: AMD Radeon RX 9070 XT [Discrete]
-          .===+==================+++++++:                 GPU 2: AMD Raphael [Integrated]
-           .-=======================+++:                  Memory: 9.35 GiB / 30.45 GiB (31%)
-             ..........................                   Swap: 0 B / 30.45 GiB (0%)
-                                                          Disk (/): 128.96 GiB / 929.50 GiB (14%) - btrfs
-                                                          Disk (/mnt/data): 84.14 GiB / 228.17 GiB (37%) - ext4
+        :*++====+++++=============-        .==:           Kernel: Linux 6.19.11-1-cachyos
+       -*+++=====+***++==========:                        Uptime: 32 mins
+      =*++++========------------:                         Packages: 1338 (pacman), 13 (flatpak)
+     =*+++++=====-                     ...                Shell: zsh 5.9
+   .+*+++++=-===:                    .=+++=:              Display (ROG PG279Q): 2560x1440 @ 1.32x in 27", 144 Hz [External]
+  :++++=====-==:                     -*****+              Display (AORUS FO27Q3): 2560x1440 @ 1.32x in 27", 360 Hz [External]
+ :++========-=.                      .=+**+.              WM: Hyprland 0.54.3 (Wayland)
+.+==========-.                          .                 Theme: wallbash [Qt], Catppuccin-Mocha [GTK2/3]
+ :+++++++====-                                .--==-.     Icons: Tela-circle-dracula [Qt], Tela-circle-dracula [GTK2/3]
+  :++==========.                             :+++++++:    Font: Cantarell (10pt) [Qt], Cantarell (10pt) [GTK2/3]
+   .-===========.                            =*****+*+    Cursor: Bibata-Modern-Ice (24px)
+    .-===========:                           .+*****+:    Terminal: kitty 0.46.2
+      -=======++++:::::::::::::::::::::::::-:  .---:      Terminal Font: CaskaydiaCoveNFM-Regular (9pt)
+       :======++++====+++******************=.             CPU: AMD Ryzen 5 7600X (12) @ 5.46 GHz
+        :=====+++==========++++++++++++++*-               GPU 1: AMD Radeon RX 9070 XT [Discrete]
+         .====++==============++++++++++*-                GPU 2: AMD Raphael [Integrated]
+          .===+==================+++++++:                 Memory: 5.27 GiB / 30.45 GiB (17%)
+           .-=======================+++:                  Swap: 0 B / 30.45 GiB (0%)
+             ..........................                   Disk (/): 277.70 GiB / 929.50 GiB (30%) - btrfs
+                                                          Disk (/mnt/data): 96.58 GiB / 228.17 GiB (42%) - ext4
                                                           Local IP (enp14s0): 192.168.1.180/24
                                                           Locale: en_US.UTF-8
