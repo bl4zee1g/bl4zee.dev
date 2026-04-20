@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.scrollPos = 0;
             this.direction = 1;
             this.resumeTimeout = null;
-            this.scrollSpeed = 0.5;
+            this.scrollSpeed = 2;
             this.pauseDuration = 1500;
             this.resumeDelay = 2000;
 
