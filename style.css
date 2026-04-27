@@ -178,23 +178,6 @@ main {
     box-shadow: 0 15px 30px -10px var(--card-shadow-hover);
 }
 
-.project-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.tech-tag {
-    background: var(--badge-lavender-bg);
-    color: var(--lavender-400);
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    border: 1px solid var(--badge-lavender-border);
-}
-
 /* Aesthetic Icons */
 .aesthetic-icon {
     width: 4rem;
@@ -266,27 +249,6 @@ main {
 
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, var(--scrollbar-thumb-hover-start), var(--scrollbar-thumb-hover-end));
-}
-
-/* Glow Effects */
-.glow-effect {
-    position: relative;
-}
-
-.glow-effect::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    background: linear-gradient(45deg, var(--lavender-500), var(--pastel-purple-500), var(--lavender-500));
-    border-radius: inherit;
-    z-index: -1;
-    filter: blur(10px);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.glow-effect:hover::before {
-    opacity: 0.6;
 }
 
 /* Responsive Adjustments */
@@ -446,37 +408,6 @@ main {
         flex-direction: row;
         align-items: flex-start;
     }
-
-    .logo-art {
-        flex-shrink: 0;
-    }
-}
-
-.logo-art {
-    color: var(--terminal-user);
-    font-weight: bold;
-    white-space: pre;
-    line-height: 1.2;
-}
-
-.sys-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-}
-
-.info-line {
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.info-key {
-    color: var(--terminal-user);
-    font-weight: bold;
-}
-
-.info-val {
-    color: var(--terminal-text);
 }
 
 /* Discord Presence Styles */
@@ -516,75 +447,6 @@ main {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
-
-.discord-profile {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-}
-
-.discord-avatar-wrapper {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.discord-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    border: 3px solid var(--lavender-500);
-    object-fit: cover;
-}
-
-.discord-status-indicator {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 4px solid rgba(30, 41, 59, 0.9);
-    background: #747f8d;
-}
-
-.discord-status-indicator.online { background: #3ba55c; }
-.discord-status-indicator.idle { background: #faa61a; }
-.discord-status-indicator.dnd { background: #ed4245; }
-.discord-status-indicator.offline { background: #747f8d; }
-
-.discord-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.discord-username {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-    font-family: 'Poppins', sans-serif;
-}
-
-.discord-status-text {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #3ba55c;
-}
-
-.status-dot.online { background: #3ba55c; }
-.status-dot.idle { background: #faa61a; }
-.status-dot.dnd { background: #ed4245; }
-.status-dot.offline { background: #747f8d; }
 
 /* Activities Container */
 .discord-activities {
@@ -700,47 +562,9 @@ main {
 
 /* Responsive Design */
 @media (max-width: 640px) {
-    .discord-profile {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-    
-    .discord-avatar-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        width: 100px;
-        height: 100px;
-        margin: 0 auto;
-    }
-    
-    .discord-status-text {
-        justify-content: center;
-    }
-    
-    .discord-info {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
     
     .discord-activities {
         width: 100%;
-    }
-    
-    .discord-avatar {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .discord-status-indicator {
-        width: 24px;
-        height: 24px;
-        bottom: 0;
-        right: 0;
     }
     
     .activity-card {
