@@ -440,6 +440,7 @@ main {
 
 .profile-avatar-container {
     position: relative;
+    display: inline-block;
 }
 
 .profile-avatar {
@@ -448,6 +449,19 @@ main {
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--lavender-400);
+    position: relative;
+    z-index: 1;
+}
+
+.profile-avatar-decoration {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 180px;
+    pointer-events: none;
+    z-index: 2;
 }
 
 .status-indicator {
@@ -703,5 +717,10 @@ main {
     .profile-avatar {
         width: 100px;
         height: 100px;
+    }
+    
+    .profile-avatar-decoration {
+        width: 150px;
+        height: 150px;
     }
 }

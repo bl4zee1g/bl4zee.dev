@@ -418,6 +418,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return `https://cdn.discordapp.com/embed/avatars/${parseInt(data.discord_user.discriminator) % 5}.png`;
         },
 
+        getAvatarDecorationUrl(data) {
+            if (data.discord_user.avatar_decoration_data?.asset) {
+                return `https://cdn.discordapp.com/avatar-decorations/${data.discord_user.id}/${data.discord_user.avatar_decoration_data.asset}.png?size=512`;
+            }
+            return null;
+        },
+
         getCustomStatus(data) {
             if (data.activities) {
                 const statusActivity = data.activities.find(a => a.type === 4);
@@ -446,6 +453,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!container) return;
 
             const avatarUrl = this.getAvatarUrl(data);
+            const avatarDecorationUrl = this.getAvatarDecorationUrl(data);
             const status = data.discord_status;
             const username = data.discord_user.global_name || data.discord_user.username;
             const customStatus = this.getCustomStatus(data);
@@ -454,6 +462,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const profileHtml = `
                 <div class="discord-profile-card">
                     <div class="profile-avatar-container">
+                        ${avatarDecorationUrl ? `<img src="${avatarDecorationUrl}" alt="Avatar Decoration" class="profile-avatar-decoration">` : ''}
                         <img src="${avatarUrl}" alt="${this.escapeHtml(username)}" class="profile-avatar">
                         <div class="status-indicator ${status}"></div>
                     </div>
