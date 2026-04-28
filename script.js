@@ -418,6 +418,16 @@ document.addEventListener('DOMContentLoaded', function () {
             return `https://cdn.discordapp.com/embed/avatars/${parseInt(data.discord_user.discriminator) % 5}.png`;
         },
 
+        getCustomStatus(data) {
+            if (data.activities) {
+                const statusActivity = data.activities.find(a => a.type === 4);
+                if (statusActivity && statusActivity.state) {
+                    return statusActivity.state;
+                }
+            }
+            return null;
+        },
+
         getActivityImage(activity) {
             if (activity.assets?.large_image) {
                 if (activity.assets.large_image.startsWith('mp:external/')) {
@@ -438,8 +448,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const avatarUrl = this.getAvatarUrl(data);
             const status = data.discord_status;
             const username = data.discord_user.global_name || data.discord_user.username;
-            const discriminator = data.discord_user.discriminator;
-            const userId = data.discord_user.id;
+            const customStatus = this.getCustomStatus(data);
 
             // Profile section (left half)
             const profileHtml = `
@@ -450,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                     <div class="profile-info">
                         <h3 class="profile-username">${this.escapeHtml(username)}</h3>
-                        <p class="profile-discriminator">#${discriminator}</p>
+                        ${customStatus ? `<p class="profile-custom-status">${this.escapeHtml(customStatus)}</p>` : ''}
                         <span class="profile-status-badge ${status}">${this.getStatusText(status)}</span>
                     </div>
                 </div>
