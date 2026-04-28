@@ -450,6 +450,30 @@ main {
     border: 3px solid var(--lavender-400);
 }
 
+/* Avatar decoration - sparkles/halo effect */
+.profile-avatar-container::before {
+    content: '✨';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
+    z-index: 10;
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.8));
+    animation: sparkle-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sparkle-pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: translateX(-50%) scale(1) rotate(0deg);
+    }
+    50% {
+        opacity: 0.8;
+        transform: translateX(-50%) scale(1.1) rotate(10deg);
+    }
+}
+
 .status-indicator {
     position: absolute;
     bottom: 5px;
