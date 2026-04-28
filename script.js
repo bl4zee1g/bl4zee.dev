@@ -455,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="discord-profile-card">
                     <div class="profile-avatar-container">
                         <img src="${avatarUrl}" alt="${this.escapeHtml(username)}" class="profile-avatar">
+                        <img src="https://raw.githubusercontent.com/iiiidev/discord-avatar-decorations/refs/heads/develop/public/decorations/angel.png" alt="Angel decoration" class="avatar-decoration">
                         <div class="status-indicator ${status}"></div>
                     </div>
                     <div class="profile-info">
