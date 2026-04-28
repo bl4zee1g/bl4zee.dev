@@ -438,6 +438,23 @@ document.addEventListener('DOMContentLoaded', function () {
             const avatarUrl = this.getAvatarUrl(data);
             const status = data.discord_status;
             const username = data.discord_user.global_name || data.discord_user.username;
+            const discriminator = data.discord_user.discriminator;
+            const userId = data.discord_user.id;
+
+            // Profile section (left half)
+            const profileHtml = `
+                <div class="discord-profile-card">
+                    <div class="profile-avatar-container">
+                        <img src="${avatarUrl}" alt="${this.escapeHtml(username)}" class="profile-avatar">
+                        <div class="status-indicator ${status}"></div>
+                    </div>
+                    <div class="profile-info">
+                        <h3 class="profile-username">${this.escapeHtml(username)}</h3>
+                        <p class="profile-discriminator">#${discriminator}</p>
+                        <span class="profile-status-badge ${status}">${this.getStatusText(status)}</span>
+                    </div>
+                </div>
+            `;
 
             let activitiesHtml = '';
 
@@ -493,6 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             container.innerHTML = `
+                ${profileHtml}
                 <div class="discord-activities">
                     ${activitiesHtml}
                 </div>
