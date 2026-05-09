@@ -126,12 +126,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const pre = document.createElement('pre');
             Object.assign(pre.style, {
                 fontFamily: "'CaskaydiaCove Nerd Font Mono', 'JetBrains Mono', monospace",
-                lineHeight: '1.2',
+                lineHeight: '1.3',
                 whiteSpace: 'pre',
                 margin: '0',
                 overflowX: 'auto',
                 color: 'var(--terminal-text)',
-                fontSize: '12px'
+                fontSize: '14px'
             });
 
             pre.innerHTML = processedLines.join('\n');

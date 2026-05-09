@@ -339,8 +339,19 @@ main {
     font-size: 0.9rem;
     line-height: 1.2;
     overflow-x: auto;
+    overflow-y: auto;
+    scrollbar-width: none;
     min-height: 560px;
 }
+
+.terminal-body * {
+    scrollbar-width: none;
+}
+.terminal-body::-webkit-scrollbar,
+.terminal-body *::-webkit-scrollbar {
+    display: none;
+}
+
 
 .prompt {
     display: flex;
