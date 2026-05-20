@@ -453,10 +453,10 @@ document.addEventListener('DOMContentLoaded', function () {
             // Profile section (left half)
             const profileHtml = `
                 <div class="discord-profile-card">
-                    <div class="profile-avatar-container">
+                    <a href="https://discordapp.com/users/${data.discord_user.id}" target="_blank" class="profile-avatar-container" title="Open Discord profile">
                         <img src="${avatarUrl}" alt="${this.escapeHtml(username)}" class="profile-avatar">
                         <div class="status-indicator ${status}"></div>
-                    </div>
+                    </a>
                     <div class="profile-info">
                         <h3 class="profile-username">${this.escapeHtml(username)}</h3>
                         ${customStatus ? `<p class="profile-custom-status">${this.escapeHtml(customStatus)}</p>` : ''}

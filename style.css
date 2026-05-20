@@ -451,6 +451,16 @@ main {
 
 .profile-avatar-container {
     position: relative;
+    display: block;
+    transition: opacity 0.2s ease;
+}
+
+.profile-avatar-container:hover {
+    opacity: 0.85;
+}
+
+.profile-avatar-container:hover .profile-avatar {
+    border-color: #a78bfa;
 }
 
 .profile-avatar {
