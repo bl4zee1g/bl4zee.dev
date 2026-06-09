@@ -471,6 +471,18 @@ main {
     border: 3px solid var(--lavender-400);
 }
 
+.avatar-decoration {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 144px;
+    height: 144px;
+    max-width: none;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 2;
+}
+
 .status-indicator {
     position: absolute;
     bottom: 5px;
