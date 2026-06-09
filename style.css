@@ -449,6 +449,27 @@ main {
     border: 1px solid rgba(139, 92, 246, 0.1);
 }
 
+.discord-profile-card.has-banner {
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.discord-profile-card.has-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+    z-index: 0;
+    border-radius: inherit;
+}
+
+.discord-profile-card.has-banner > * {
+    position: relative;
+    z-index: 1;
+}
+
 .profile-avatar-container {
     position: relative;
     display: block;

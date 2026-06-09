@@ -310,9 +310,33 @@ document.addEventListener('DOMContentLoaded', function () {
         heartbeatInterval: null,
         spotifyInterval: null,
         currentData: null,
+        bannerUrl: null,
 
         init() {
             this.connect();
+            this.fetchBanner();
+        },
+
+        async fetchBanner() {
+            try {
+                const res = await fetch(`https://dcdn.dstn.to/profile/${this.userId}`);
+                const data = await res.json();
+                const hash = data.user?.banner;
+                if (hash) {
+                    this.bannerUrl = `https://cdn.discordapp.com/banners/${this.userId}/${hash}.webp?size=1024`;
+                    this.applyBanner();
+                }
+            } catch (e) {
+                console.warn('Failed to fetch banner:', e);
+            }
+        },
+
+        applyBanner() {
+            const card = document.querySelector('.discord-profile-card');
+            if (card && this.bannerUrl) {
+                card.style.backgroundImage = `url(${this.bannerUrl})`;
+                card.classList.add('has-banner');
+            }
         },
 
         connect() {
@@ -543,6 +567,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     ${activitiesHtml}
                 </div>
             `;
+
+            this.applyBanner();
         },
 
         getActivityTypeLabel(type) {
