@@ -323,6 +323,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 const res = await fetch(`https://dcdn.dstn.to/profile/${this.userId}`);
                 const data = await res.json();
 
+                const themeColor = data.user_profile?.theme_colors?.[0];
+                if (themeColor != null) {
+                    this.themeColor = '#' + themeColor.toString(16).padStart(6, '0');
+                }
+
                 const hash = data.user?.banner;
                 if (hash) {
                     this.bannerUrl = `https://cdn.discordapp.com/banners/${this.userId}/${hash}.webp?size=1024`;
@@ -343,7 +348,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         applyBanner() {
             const card = document.querySelector('.discord-profile-card');
-            if (card && this.bannerUrl) {
+            if (!card) return;
+            if (this.themeColor) {
+                card.style.backgroundColor = this.themeColor;
+            }
+            if (this.bannerUrl) {
                 card.style.backgroundImage = `url(${this.bannerUrl})`;
                 card.classList.add('has-banner');
             }
