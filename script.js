@@ -311,23 +311,33 @@ document.addEventListener('DOMContentLoaded', function () {
         spotifyInterval: null,
         currentData: null,
         bannerUrl: null,
+        profileEffects: null,
 
         init() {
             this.connect();
-            this.fetchBanner();
+            this.fetchProfileData();
         },
 
-        async fetchBanner() {
+        async fetchProfileData() {
             try {
                 const res = await fetch(`https://dcdn.dstn.to/profile/${this.userId}`);
                 const data = await res.json();
+
                 const hash = data.user?.banner;
                 if (hash) {
                     this.bannerUrl = `https://cdn.discordapp.com/banners/${this.userId}/${hash}.webp?size=1024`;
                     this.applyBanner();
                 }
+
+                const effectSku = data.user_profile?.profile_effect?.sku_id;
+                if (effectSku) {
+                    const effectRes = await fetch(`https://discord.com/api/v9/collectibles-products/${effectSku}`);
+                    const effectData = await effectRes.json();
+                    this.profileEffects = effectData.items?.[0]?.effects || [];
+                    this.applyProfileEffect();
+                }
             } catch (e) {
-                console.warn('Failed to fetch banner:', e);
+                console.warn('Failed to fetch profile data:', e);
             }
         },
 
@@ -337,6 +347,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.style.backgroundImage = `url(${this.bannerUrl})`;
                 card.classList.add('has-banner');
             }
+        },
+
+        applyProfileEffect() {
+            const card = document.querySelector('.discord-profile-card');
+            if (!card || !this.profileEffects?.length) return;
+
+            card.querySelectorAll('.profile-effect').forEach(el => el.remove());
+
+            this.profileEffects.filter(e => e.loop).forEach(effect => {
+                const img = document.createElement('img');
+                img.src = effect.src;
+                img.className = 'profile-effect';
+                img.alt = '';
+                card.appendChild(img);
+            });
         },
 
         connect() {
@@ -559,6 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
 
             this.applyBanner();
+            this.applyProfileEffect();
         },
 
         getActivityTypeLabel(type) {

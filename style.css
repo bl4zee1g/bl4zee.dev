@@ -447,13 +447,13 @@ main {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 0.75rem;
     border: 1px solid rgba(139, 92, 246, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
 .discord-profile-card.has-banner {
     background-size: cover;
     background-position: center;
-    position: relative;
-    overflow: hidden;
 }
 
 .discord-profile-card.has-banner::before {
@@ -502,6 +502,17 @@ main {
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 2;
+}
+
+.discord-profile-card .profile-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    z-index: 10;
+    max-width: none;
 }
 
 .status-indicator {
