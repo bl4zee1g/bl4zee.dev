@@ -424,15 +424,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return `${minutes}:${seconds.toString().padStart(2, '0')}`;
         },
 
-        getStatusText(status) {
-            const statuses = {
-                online: 'Online',
-                idle: 'Idle',
-                dnd: 'Do Not Disturb',
-                offline: 'Offline'
-            };
-            return statuses[status] || 'Unknown';
-        },
 
         getAvatarUrl(data) {
             if (data.discord_user.avatar) {
