@@ -503,7 +503,6 @@ document.addEventListener('DOMContentLoaded', function () {
                             ${this.escapeHtml(username)}${data.discord_user.primary_guild?.identity_enabled && data.discord_user.primary_guild?.tag ? `<span class="guild-tag"><img src="https://cdn.discordapp.com/clan-badges/${data.discord_user.primary_guild.identity_guild_id}/${data.discord_user.primary_guild.badge}.png?size=32" alt="" class="guild-tag-badge"> ${this.escapeHtml(data.discord_user.primary_guild.tag)}</span>` : ''}
                         </h3>
                         ${customStatus ? `<p class="profile-custom-status">${customStatus.emojiHtml}${this.escapeHtml(customStatus.text)}</p>` : ''}
-                        <span class="profile-status-badge ${status}">${this.getStatusText(status)}</span>
                     </div>
                 </div>
             `;
