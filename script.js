@@ -427,8 +427,17 @@ document.addEventListener('DOMContentLoaded', function () {
         getCustomStatus(data) {
             if (data.activities) {
                 const statusActivity = data.activities.find(a => a.type === 4);
-                if (statusActivity && statusActivity.state) {
-                    return statusActivity.state;
+                if (statusActivity) {
+                    const emoji = statusActivity.emoji;
+                    let emojiHtml = '';
+                    if (emoji?.id) {
+                        const ext = emoji.animated ? 'gif' : 'png';
+                        const url = `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=32`;
+                        emojiHtml = `<img src="${url}" alt=":${this.escapeHtml(emoji.name)}:" class="custom-status-emoji">`;
+                    } else if (emoji?.name) {
+                        emojiHtml = `<span class="custom-status-emoji">${emoji.name}</span>`;
+                    }
+                    return { text: statusActivity.state || '', emojiHtml };
                 }
             }
             return null;
@@ -466,8 +475,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="status-indicator ${status}"></div>
                     </a>
                     <div class="profile-info">
-                        <h3 class="profile-username">${this.escapeHtml(username)}</h3>
-                        ${customStatus ? `<p class="profile-custom-status">${this.escapeHtml(customStatus)}</p>` : ''}
+                        <h3 class="profile-username">
+                            ${this.escapeHtml(username)}${data.discord_user.primary_guild?.identity_enabled && data.discord_user.primary_guild?.tag ? `<span class="guild-tag"><img src="https://cdn.discordapp.com/clan-badges/${data.discord_user.primary_guild.identity_guild_id}/${data.discord_user.primary_guild.badge}.png?size=32" alt="" class="guild-tag-badge"> ${this.escapeHtml(data.discord_user.primary_guild.tag)}</span>` : ''}
+                        </h3>
+                        ${customStatus ? `<p class="profile-custom-status">${customStatus.emojiHtml}${this.escapeHtml(customStatus.text)}</p>` : ''}
                         <span class="profile-status-badge ${status}">${this.getStatusText(status)}</span>
                     </div>
                 </div>
