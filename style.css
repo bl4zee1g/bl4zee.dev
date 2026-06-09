@@ -12,12 +12,7 @@
     /* Brand Colors */
     --lavender-300: #c4b5fd;
     --lavender-400: #a78bfa;
-    --lavender-500: #8b5cf6;
-    --lavender-600: #7c3aed;
     --pastel-purple-300: #d8b4fe;
-    --pastel-purple-400: #c084fc;
-    --pastel-purple-500: #a855f7;
-    --pastel-purple-600: #9333ea;
 
     /* Component Colors */
     --card-bg: rgba(30, 41, 59, 1);
@@ -159,23 +154,6 @@ main {
 .social-card:hover .icon-container {
     background: linear-gradient(135deg, var(--icon-bg-hover-start), var(--icon-bg-hover-end));
     transform: scale(1.05);
-}
-
-/* Project Cards */
-.project-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid var(--card-border);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.project-card:hover {
-    border-color: var(--card-border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 15px 30px -10px var(--card-shadow-hover);
 }
 
 /* Aesthetic Icons */

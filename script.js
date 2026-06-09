@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function () {
         addPrompt(container) {
             const newPrompt = document.createElement('div');
             newPrompt.className = 'prompt';
-            newPrompt.innerHTML = `<span class="prompt-path" style="color: var(--terminal-path)">~</span> <span class="prompt-symbol" style="color: var(--terminal-dot-green)">&gt;</span> <span class="input-line"></span><span class="cursor-block"></span>`;
+            newPrompt.innerHTML = `<span class="prompt-path">~</span> <span class="prompt-symbol">&gt;</span> <span class="input-line"></span><span class="cursor-block"></span>`;
 
             const prevCursor = container.querySelector('.prompt:not(:last-child) .cursor-block');
             if (prevCursor) prevCursor.remove();
