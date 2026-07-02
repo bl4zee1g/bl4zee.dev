@@ -319,7 +319,7 @@ main {
     overflow-x: auto;
     overflow-y: auto;
     scrollbar-width: none;
-    min-height: 560px;
+    height: 650px;
 }
 
 .terminal-body * {
