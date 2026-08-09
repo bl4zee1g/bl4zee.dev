@@ -525,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </a>
                     <div class="profile-info">
                         <h3 class="profile-username">
-                            ${this.escapeHtml(username)}${data.discord_user.primary_guild?.identity_enabled && data.discord_user.primary_guild?.tag ? ` <a href="https://discord.gg/tc6GQZVtFy" target="_blank" class="guild-tag"><img src="https://cdn.discordapp.com/clan-badges/${data.discord_user.primary_guild.identity_guild_id}/${data.discord_user.primary_guild.badge}.png?size=32" alt="" class="guild-tag-badge"> ${this.escapeHtml(data.discord_user.primary_guild.tag)}</a>` : ''}
+                            ${this.escapeHtml(username)}${data.discord_user.primary_guild?.identity_enabled && data.discord_user.primary_guild?.tag ? ` <a href="https://discord.gg/draingang" target="_blank" class="guild-tag"><img src="https://cdn.discordapp.com/clan-badges/${data.discord_user.primary_guild.identity_guild_id}/${data.discord_user.primary_guild.badge}.png?size=32" alt="" class="guild-tag-badge"> ${this.escapeHtml(data.discord_user.primary_guild.tag)}</a>` : ''}
                         </h3>
                         ${customStatus ? `<p class="profile-custom-status">${customStatus.emojiHtml}${this.escapeHtml(customStatus.text)}</p>` : ''}
                     </div>
