@@ -524,7 +524,7 @@ main {
 .profile-username {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: #d29ff1;
     margin-bottom: 0.25rem;
 }
 
@@ -536,7 +536,7 @@ main {
     padding: 0.1rem 0.4rem;
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: #d29ff1;
     background: rgba(255, 255, 255, 0.06);
     border-radius: 0.25rem;
     vertical-align: middle;
@@ -551,7 +551,7 @@ main {
 
 .profile-custom-status {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: #d29ff1;
     margin-bottom: 0.5rem;
     font-style: italic;
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
