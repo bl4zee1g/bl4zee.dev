@@ -431,14 +431,20 @@ main {
     overflow: clip;
 }
 
-    .discord-profile-card.has-banner {background-size: 100% auto;
-        background-size: auto;
-        background-position: top center;
-        background-repeat: no-repeat;
+.discord-profile-card.has-banner {
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
 }
-
-
-.discord-profile-card.has-banner > * {
+.discord-profile-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(8, 10, 18, 0.1) 0%, rgba(8, 10, 18, 0.5) 45%, rgba(8, 10, 18, 0.88) 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+.discord-profile-card > * {
     position: relative;
     z-index: 1;
 }
@@ -525,6 +531,7 @@ main {
     font-size: 1.25rem;
     font-weight: 600;
     color: #d29ff1;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
     margin-bottom: 0.25rem;
 }
 
@@ -537,7 +544,9 @@ main {
     font-size: 0.75rem;
     font-weight: 500;
     color: #d29ff1;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(10, 12, 22, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
     border-radius: 0.25rem;
     vertical-align: middle;
     text-decoration: none;
@@ -554,7 +563,7 @@ main {
     color: #d29ff1;
     margin-bottom: 0.5rem;
     font-style: italic;
-    text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 
 .custom-status-emoji {
