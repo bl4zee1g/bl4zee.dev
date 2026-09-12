@@ -1,285 +1,445 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="dark">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Jane Wirz | bl4zee</title>
-    <meta name="description"
-        content="Portfolio of Jane Wirz (bl4zee) - Developer and drain gang / sadboys connoisseuse.">
-    <meta property="og:title" content="Jane Wirz | bl4zee">
-    <meta property="og:description"
-        content="Portfolio of Jane Wirz (bl4zee) - Developer and drain gang / sadboys connoisseuse.">
-    <meta property="og:type" content="website">
-    <link rel="icon" type="image/png" href="https://femboy.beauty/v4NFyy">
-    <link rel="stylesheet" href="style.css">
+    <meta
+      name="description"
+      content="Portfolio of Jane Wirz (bl4zee) - Developer and drain gang / sadboys connoisseuse."
+    />
+    <meta property="og:title" content="Jane Wirz | bl4zee" />
+    <meta
+      property="og:description"
+      content="Portfolio of Jane Wirz (bl4zee) - Developer and drain gang / sadboys connoisseuse."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/png" href="https://femboy.beauty/v4NFyy" />
+    <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        'lavender': {
-                            300: '#c4b5fd',
-                            400: '#a78bfa',
-                            700: '#6d28d9',
-                        },
-                        'pastel-purple': {
-                            300: '#d8b4fe',
-                            700: '#7e22ce',
-                        }
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                        'display': ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
-                        'mono': ['JetBrains Mono', 'monospace'],
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              lavender: {
+                300: "#c4b5fd",
+                400: "#a78bfa",
+                700: "#6d28d9",
+              },
+              "pastel-purple": {
+                300: "#d8b4fe",
+                700: "#7e22ce",
+              },
+            },
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+              display: ["Poppins", "Inter", "system-ui", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
     </script>
     <script src="https://unpkg.com/feather-icons"></script>
-</head>
+  </head>
 
-<body class="bg-gray-900 text-gray-100 font-sans antialiased transition-all duration-300">
+  <body
+    class="bg-gray-900 text-gray-100 font-sans antialiased transition-all duration-300"
+  >
     <!-- Galaxy Star Background -->
-    <canvas id="galaxy-canvas"
-        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; display: block;"></canvas>
+    <canvas
+      id="galaxy-canvas"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
+        pointer-events: none;
+        display: block;
+      "
+    ></canvas>
 
     <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <header class="mb-16">
-            <div class="flex flex-col lg:flex-row items-center lg:items-start gap-10">
-                <div class="w-full lg:w-2/5">
-                    <div class="relative group w-fit mx-auto lg:mx-0">
-                        <div
-                            class="absolute -inset-4 bg-[radial-gradient(circle,var(--tw-gradient-stops))] from-lavender-700 to-pastel-purple-700 rounded-full blur-2xl opacity-50 group-hover:opacity-70 transition duration-500">
-                        </div>
-                        <img src="https://femboy.beauty/Bf4yIS" alt="Jane Wirz"
-                            class="relative w-64 h-64 rounded-full object-cover border-4 border-gray-800 shadow-2xl mx-auto lg:mx-0">
-                    </div>
-                </div>
-                <div class="w-full lg:w-3/5 text-center lg:text-left">
-                    <h1 class="text-4xl md:text-5xl font-display font-bold mb-4">
-                        <span id="typewriter-text"
-                            class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300">Jane
-                            Wirz</span>
-                        <span class="text-gray-400 block text-xl md:text-2xl mt-2">📍 Cyberia</span>
-                    </h1>
-                    <p class="text-lg text-gray-300 mb-6 max-w-2xl">
-                        🏳️‍⚧️ she/her
-                    </p>
-                    <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
-                        <span id="age-display" class="badge badge-deep"></span>
-                        <span class="badge badge-lavender">Apprentice</span>
-                        <span class="badge badge-pastel">EN/DE/FR</span>
-                    </div>
-                </div>
+      <header class="mb-16">
+        <div
+          class="flex flex-col lg:flex-row items-center lg:items-start gap-10"
+        >
+          <div class="w-full lg:w-2/5">
+            <div class="relative group w-fit mx-auto lg:mx-0">
+              <div
+                class="absolute -inset-4 bg-[radial-gradient(circle,var(--tw-gradient-stops))] from-lavender-700 to-pastel-purple-700 rounded-full blur-2xl opacity-50 group-hover:opacity-70 transition duration-500"
+              ></div>
+              <img
+                src="https://femboy.beauty/Bf4yIS"
+                alt="Jane Wirz"
+                class="relative w-64 h-64 rounded-full object-cover border-4 border-gray-800 shadow-2xl mx-auto lg:mx-0"
+              />
             </div>
-        </header>
-
-        <section class="mb-16">
-            <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
-                <i data-feather="heart" class="mr-3 text-lavender-400"></i>
-                <span
-                    class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300">Connect</span>
-            </h2>
-            <div class="carousel-container">
-                <div id="connect-carousel" class="carousel-wrapper">
-                    <a href="mailto:jane@bl4zee.dev" class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/protonmail/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">Email</h3>
-                            <p class="text-gray-400 text-sm">jane@bl4zee.dev</p>
-                        </div>
-                    </a>
-
-                    <a href="https://github.com/bl4zee1g" target="_blank" class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/github/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">GitHub</h3>
-                            <p class="text-gray-400 text-sm">@bl4zee1g</p>
-                        </div>
-                    </a>
-
-                    <a href="https://git.gay/bl4zee" target="_blank" class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/forgejo/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">Forgejo</h3>
-                            <p class="text-gray-400 text-sm">bl4zee</p>
-                        </div>
-                    </a>
-
-                    <a href="https://www.last.fm/user/bl4zee" target="_blank"
-                        class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/lastdotfm/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">last.fm</h3>
-                            <p class="text-gray-400 text-sm">bl4zee</p>
-                        </div>
-                    </a>
-
-                    <a href="https://s.team/p/fgj-tqf" target="_blank" class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/steam/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">Steam</h3>
-                            <p class="text-gray-400 text-sm">/id/bl4zee1g/</p>
-                        </div>
-                    </a>
-
-                    <a href="https://discordapp.com/users/502866937617973260" target="_blank" class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/discord/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">Discord</h3>
-                            <p class="text-gray-400 text-sm">bl4zee1g</p>
-                        </div>
-                    </a>
-
-                    <a href="https://x.com/bl4zee1g" target="_blank" class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/X/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">X</h3>
-                            <p class="text-gray-400 text-sm">bl4zee1g</p>
-                        </div>
-                    </a>
-
-                    <a href="https://www.youtube.com/@bl4zee1g" target="_blank"
-                        class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/youtube/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">YouTube</h3>
-                            <p class="text-gray-400 text-sm">bl4zee1g</p>
-                        </div>
-                    </a>
-
-                    <a href="https://music.youtube.com/channel/UCWoeBkasm_Jg-gAe7jWisJQ" target="_blank"
-                        class="social-card group">
-                        <div class="icon-container bg-gray-800/50">
-                            <img src="https://cdn.simpleicons.org/youtubemusic/ffffff" width="24" height="24"/>
-                        </div>
-                        <div>
-                            <h3 class="font-display font-semibold text-lg">YT Music</h3>
-                            <p class="text-gray-400 text-sm">bl4zeeflac</p>
-                        </div>
-                    </a>
-                </div>
+          </div>
+          <div class="w-full lg:w-3/5 text-center lg:text-left">
+            <h1 class="text-4xl md:text-5xl font-display font-bold mb-4">
+              <span
+                id="typewriter-text"
+                class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300"
+                >Jane Wirz</span
+              >
+              <span class="text-gray-400 block text-xl md:text-2xl mt-2"
+                >📍 Cyberia</span
+              >
+            </h1>
+            <p class="text-lg text-gray-300 mb-6 max-w-2xl">🏳️‍⚧️ she/her</p>
+            <div class="flex flex-wrap gap-4 justify-center lg:justify-start">
+              <span id="age-display" class="badge badge-deep"></span>
+              <span class="badge badge-lavender">Apprentice</span>
+              <span class="badge badge-pastel">EN/DE/FR</span>
             </div>
-        </section>
+          </div>
+        </div>
+      </header>
 
-        <section class="mb-16">
-            <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
-                <img src="https://cdn.simpleicons.org/discord/a78bfa" width="24" height="24"
-                    class="mr-3" alt="Discord"/>
-                <span class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300">Discord</span>
-            </h2>
-            <div id="discord-presence" class="discord-presence-container grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="discord-loading col-span-full">
-                    <div class="loading-spinner"></div>
-                    <span>Connecting to Discord...</span>
-                </div>
+      <section class="mb-16">
+        <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
+          <i data-feather="heart" class="mr-3 text-lavender-400"></i>
+          <span
+            class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300"
+            >Connect</span
+          >
+        </h2>
+        <div class="carousel-container">
+          <div id="connect-carousel" class="carousel-wrapper">
+            <a href="mailto:jane@bl4zee.dev" class="social-card group">
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/protonmail/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">Email</h3>
+                <p class="text-gray-400 text-sm">jane@bl4zee.dev</p>
+              </div>
+            </a>
+
+            <a
+              href="https://github.com/bl4zee1g"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/github/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">GitHub</h3>
+                <p class="text-gray-400 text-sm">@bl4zee1g</p>
+              </div>
+            </a>
+
+            <a
+              href="https://git.gay/bl4zee"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/forgejo/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">Forgejo</h3>
+                <p class="text-gray-400 text-sm">bl4zee</p>
+              </div>
+            </a>
+
+            <a
+              href="https://www.last.fm/user/bl4zee"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/lastdotfm/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">last.fm</h3>
+                <p class="text-gray-400 text-sm">bl4zee</p>
+              </div>
+            </a>
+
+            <a
+              href="https://s.team/p/fgj-tqf"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/steam/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">Steam</h3>
+                <p class="text-gray-400 text-sm">/id/bl4zee1g/</p>
+              </div>
+            </a>
+
+            <a
+              href="https://discordapp.com/users/502866937617973260"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/discord/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">Discord</h3>
+                <p class="text-gray-400 text-sm">bl4zee1g</p>
+              </div>
+            </a>
+
+            <a
+              href="https://x.com/bl4zee1g"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/X/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">X</h3>
+                <p class="text-gray-400 text-sm">bl4zee1g</p>
+              </div>
+            </a>
+
+            <a
+              href="https://www.youtube.com/@bl4zee1g"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/youtube/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">YouTube</h3>
+                <p class="text-gray-400 text-sm">bl4zee1g</p>
+              </div>
+            </a>
+
+            <a
+              href="https://music.youtube.com/channel/UCWoeBkasm_Jg-gAe7jWisJQ"
+              target="_blank"
+              class="social-card group"
+            >
+              <div class="icon-container bg-gray-800/50">
+                <img
+                  src="https://cdn.simpleicons.org/youtubemusic/ffffff"
+                  width="24"
+                  height="24"
+                />
+              </div>
+              <div>
+                <h3 class="font-display font-semibold text-lg">YT Music</h3>
+                <p class="text-gray-400 text-sm">bl4zeeflac</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
+          <img
+            src="https://cdn.simpleicons.org/discord/a78bfa"
+            width="24"
+            height="24"
+            class="mr-3"
+            alt="Discord"
+          />
+          <span
+            class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300"
+            >Discord</span
+          >
+        </h2>
+        <div
+          id="discord-presence"
+          class="discord-presence-container grid grid-cols-1 lg:grid-cols-2 gap-6"
+        >
+          <div class="discord-loading col-span-full">
+            <div class="loading-spinner"></div>
+            <span>Connecting to Discord...</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
+          <i data-feather="star" class="mr-3 text-lavender-400"></i>
+          <span
+            class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300"
+            >Interests</span
+          >
+        </h2>
+        <div
+          class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 p-8"
+          style="
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+          "
+        >
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="text-center">
+              <div class="aesthetic-icon mx-auto mb-4">
+                <img
+                  src="https://cdn.simpleicons.org/youtubemusic/ffffff"
+                  width="50"
+                  height="50"
+                />
+              </div>
+              <h3 class="font-display font-semibold text-lg mb-2">Music</h3>
+              <p class="text-gray-400">
+                You should check my last.fm linked above for more details! Some
+                of my all time favs are Bladee, Ecco2k, Yung Lean,
+                Sewerslvt/Cynthoni
+              </p>
             </div>
-        </section>
-
-        <section class="mb-16">
-            <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
-                <i data-feather="star" class="mr-3 text-lavender-400"></i>
-                <span
-                    class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300">Interests</span>
-            </h2>
-            <div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-700/50 p-8"
-                style="backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <div class="text-center">
-                        <div class="aesthetic-icon mx-auto mb-4">
-                            <img src="https://cdn.simpleicons.org/youtubemusic/ffffff" width="50" height="50"/>
-                        </div>
-                        <h3 class="font-display font-semibold text-lg mb-2">Music</h3>
-                        <p class="text-gray-400">You should check my last.fm linked above for more details! Some of my all time favs are Bladee, Ecco2k, Yung Lean, Sewerslvt/Cynthoni</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="aesthetic-icon mx-auto mb-4">
-                            <img src="https://cdn.simpleicons.org/counterstrike/ffffff" width="50" height="50"/>
-                        </div>
-                        <h3 class="font-display font-semibold text-lg mb-2">Gay ming</h3>
-                        <p class="text-gray-400">I luuhh Counter-Strike. I mostly play around the movement
-                            mechanics (bhopping / surfing) but I also play some Premiere from time to time :)</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="aesthetic-icon mx-auto mb-4">
-                            <img src="https://cdn.simpleicons.org/linux/ffffff" width="50" height="50"/>
-                        </div>
-                        <h3 class="font-display font-semibold text-lg mb-2">Open-Source</h3>
-                        <p class="text-gray-400">Most of the software I use in my day to day is FOSS. I love keeping up with new projects and try to make small contributions to projects I like</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="aesthetic-icon mx-auto mb-4">
-                            <img src="https://cdn.simpleicons.org/pipecat/ffffff" width="50" height="50"/>
-                        </div>
-                        <h3 class="font-display font-semibold text-lg mb-2">Cats</h3>
-                        <p class="text-gray-400">All cats are beautiful! I love them so much :) You can check some
-                            pictures of my cat Yuno on my Immich instance <a href="https://immich.bl4zee.dev/s/yuno"
-                                target="_blank" class="hover:text-lavender-400 transition-colors">here</a>
-                        </p>
-                    </div>
-                </div>
+            <div class="text-center">
+              <div class="aesthetic-icon mx-auto mb-4">
+                <img
+                  src="https://cdn.simpleicons.org/counterstrike/ffffff"
+                  width="50"
+                  height="50"
+                />
+              </div>
+              <h3 class="font-display font-semibold text-lg mb-2">Gay ming</h3>
+              <p class="text-gray-400">
+                I luuhh Counter-Strike. I mostly play around the movement
+                mechanics (bhopping / surfing) but I also play some Premiere
+                from time to time :)
+              </p>
             </div>
-        </section>
-
-        <section class="mb-16">
-            <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
-                <i data-feather="cpu" class="mr-3 text-lavender-400"></i>
-                <span
-                    class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300">Setup</span>
-            </h2>
-
-            <div class="terminal-window">
-                <div class="terminal-header">
-                    <div class="terminal-dot dot-red"></div>
-                    <div class="terminal-dot dot-yellow"></div>
-                    <div class="terminal-dot dot-green"></div>
-                    <div class="terminal-title">kitty</div>
-                </div>
-                <div class="terminal-body" id="terminal-body">
-                    <div class="prompt">
-                        <span class="prompt-user">bl4zee</span><span class="prompt-at">@</span><span
-                            class="prompt-host">c0re</span>
-                        <span class="prompt-path">~</span>
-                        <span class="prompt-symbol">&gt;</span>
-                        <span class="input-line" id="terminal-input"></span><span class="cursor-block"></span>
-                    </div>
-                </div>
+            <div class="text-center">
+              <div class="aesthetic-icon mx-auto mb-4">
+                <img
+                  src="https://cdn.simpleicons.org/linux/ffffff"
+                  width="50"
+                  height="50"
+                />
+              </div>
+              <h3 class="font-display font-semibold text-lg mb-2">
+                Open-Source
+              </h3>
+              <p class="text-gray-400">
+                Most of the software I use in my day to day is FOSS. I love
+                keeping up with new projects and try to make small contributions
+                to projects I like
+              </p>
             </div>
-        </section>
+            <div class="text-center">
+              <div class="aesthetic-icon mx-auto mb-4">
+                <img
+                  src="https://cdn.simpleicons.org/pipecat/ffffff"
+                  width="50"
+                  height="50"
+                />
+              </div>
+              <h3 class="font-display font-semibold text-lg mb-2">Cats</h3>
+              <p class="text-gray-400">
+                All cats are beautiful! I love them so much :) You can check
+                some pictures of my cat Yuno on my Immich instance
+                <a
+                  href="https://immich.bl4zee.dev/s/yuno"
+                  target="_blank"
+                  class="hover:text-lavender-400 transition-colors"
+                  >here</a
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mb-16">
+        <h2 class="text-3xl font-display font-bold mb-8 flex items-center">
+          <i data-feather="cpu" class="mr-3 text-lavender-400"></i>
+          <span
+            class="bg-clip-text text-transparent bg-gradient-to-r from-lavender-300 to-pastel-purple-300"
+            >Setup</span
+          >
+        </h2>
+
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dot dot-red"></div>
+            <div class="terminal-dot dot-yellow"></div>
+            <div class="terminal-dot dot-green"></div>
+            <div class="terminal-title">Ghostty</div>
+          </div>
+          <div class="terminal-body" id="terminal-body">
+            <div class="prompt">
+              <span class="prompt-user">bl4zee</span
+              ><span class="prompt-at">@</span
+              ><span class="prompt-host">c0re</span>
+              <span class="prompt-path">~</span>
+              <span class="prompt-symbol">&gt;</span>
+              <span class="input-line" id="terminal-input"></span
+              ><span class="cursor-block"></span>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="text-center py-8 text-gray-500 text-sm">
-        <p class="mb-2">This site is open source. Check out its <a href="https://github.com/bl4zee1g/bl4zee.dev"
-                target="_blank" class="hover:text-lavender-400 transition-colors">repository</a></p>
-        <p class="mb-2">Built and hosted myself in 🇨🇭</p>
-        <p class="mb-2">See the <a href="https://status.bl4zee.dev"
-                target="_blank" class="hover:text-lavender-400 transition-colors">status of my services</a></p>
-        <p>&copy; Jane Wirz <span id="current-year"></span></p>
+      <p class="mb-2">
+        This site is open source. Check out its
+        <a
+          href="https://github.com/bl4zee1g/bl4zee.dev"
+          target="_blank"
+          class="hover:text-lavender-400 transition-colors"
+          >repository</a
+        >
+      </p>
+      <p class="mb-2">Built and hosted myself in 🇨🇭</p>
+      <p class="mb-2">
+        See the
+        <a
+          href="https://status.bl4zee.dev"
+          target="_blank"
+          class="hover:text-lavender-400 transition-colors"
+          >status of my services</a
+        >
+      </p>
+      <p>&copy; Jane Wirz <span id="current-year"></span></p>
     </footer>
 
     <script src="galaxy.js" defer></script>
     <script src="oneko.js" defer></script>
     <script src="script.js" defer></script>
-</body>
-
+  </body>
 </html>
