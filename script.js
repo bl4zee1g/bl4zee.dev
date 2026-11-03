@@ -1,10 +1,10 @@
 const CONFIG = {
   birthDate: "2005-12-16",
-  typewriterTexts: ["Jane Wirz", "bl4zee"],
-  terminalCommand: "cat `.local/share/screensaver/Haunted Mound.txt`",
+  typewriterTexts: ["Jane", "bl4zee"],
   revealOffset: "20px",
   revealThreshold: 0.1,
   discordUserId: "502866937617973260",
+  statusPageUrl: "https://status.bl4zee.dev",
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   const cards = document.querySelectorAll(
-    ".social-card, .project-card, .text-center, .terminal-window",
+    ".social-card, .project-card, .text-center, .homelab-figure, .status-grid",
   );
   cards.forEach((card, index) => {
     card.style.opacity = "0";
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Typewriter
   class Typewriter {
-    constructor(elementId, texts, waitTime = 3000) {
+    constructor(elementId, texts, waitTime = 1500) {
       this.element = document.getElementById(elementId);
       if (!this.element) return;
       this.texts = texts;
@@ -77,8 +77,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       this.element.textContent = this.txt;
 
-      let typeSpeed = 750;
-      if (this.isDeleting) typeSpeed /= 2;
+      let typeSpeed = 90;
+      if (this.isDeleting) typeSpeed = 45;
 
       if (!this.isDeleting && this.txt === fullTxt) {
         typeSpeed = this.waitTime;
@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (this.isDeleting && this.txt === "") {
         this.isDeleting = false;
         this.wordIndex++;
-        typeSpeed = 500;
+        typeSpeed = 250;
       }
 
       setTimeout(() => this.type(), typeSpeed);
@@ -107,131 +107,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   updateAge();
   setInterval(updateAge, 86400000);
-
-  // Terminal Logic
-  const Terminal = {
-    async execute(container) {
-      let text = "";
-      try {
-        const response = await fetch("fastfetch.txt");
-        if (!response.ok) throw new Error("Failed to load");
-        text = await response.text();
-      } catch (error) {
-        console.error("Error fetching fastfetch.txt:", error);
-        text = "Error: Could not load terminal output.";
-      }
-
-      const outputDiv = document.createElement("div");
-      outputDiv.className = "neofetch-output";
-
-      const processedLines = text
-        .split("\n")
-        .map((line) => this.processLine(line));
-
-      const pre = document.createElement("pre");
-      Object.assign(pre.style, {
-        fontFamily:
-          "'CaskaydiaCove Nerd Font Mono', 'JetBrains Mono', monospace",
-        lineHeight: "1.3",
-        whiteSpace: "pre",
-        margin: "0",
-        overflowX: "auto",
-        color: "var(--terminal-text)",
-        fontSize: "14px",
-      });
-
-      pre.innerHTML = processedLines.join("\n");
-      outputDiv.appendChild(pre);
-      container.appendChild(outputDiv);
-      this.addPrompt(container);
-    },
-
-    processLine(line) {
-      let safeLine = line
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      // User@Host
-      if (safeLine.includes("@") && !safeLine.includes(": ")) {
-        const match = safeLine.match(/^(.*?)(\s+)([^\s]+@[^\s]+)$/);
-        if (match) {
-          return `<span style="color: var(--terminal-cyan)">${match[1]}</span>${match[2]}<span style="color: var(--terminal-cyan); text-decoration: underline; font-weight: bold;">${match[3]}</span>`;
-        }
-      }
-
-      // Dhashes
-      if (safeLine.includes("-----------")) {
-        const match = safeLine.match(/^(.*?)(\s+)(-----------)$/);
-        if (match) {
-          return `<span style="color: var(--terminal-cyan)">${match[1]}</span>${match[2]}<span style="color: var(--terminal-cyan)">${match[3]}</span>`;
-        }
-      }
-
-      // Key: Value
-      if (safeLine.includes(": ")) {
-        const match = safeLine.match(
-          /^(.*?)(\s{5,})([A-Za-z0-9\s(/)]+:\s+)(.*)$/,
-        );
-        if (match) {
-          const valPart = match[4].replace(
-            /(\(\d+%\))/g,
-            '<span style="color: var(--terminal-green)">$1</span>',
-          );
-          return `<span style="color: var(--terminal-cyan)">${match[1]}</span>${match[2]}<span style="color: var(--terminal-cyan); font-weight: bold;">${match[3]}</span><span style="color: var(--terminal-text)">${valPart}</span>`;
-        }
-      }
-
-      return `<span style="color: var(--terminal-cyan)">${safeLine}</span>`;
-    },
-
-    addPrompt(container) {
-      const newPrompt = document.createElement("div");
-      newPrompt.className = "prompt";
-      newPrompt.innerHTML = `<span class="prompt-path">~</span> <span class="prompt-symbol">&gt;</span> <span class="input-line"></span><span class="cursor-block"></span>`;
-
-      const prevCursor = container.querySelector(
-        ".prompt:not(:last-child) .cursor-block",
-      );
-      if (prevCursor) prevCursor.remove();
-
-      container.appendChild(newPrompt);
-      container.scrollTop = container.scrollHeight;
-    },
-
-    startTyping(inputElement, containerElement) {
-      const text = CONFIG.terminalCommand;
-      let index = 0;
-      inputElement.textContent = "";
-
-      const typeChar = () => {
-        if (index < text.length) {
-          inputElement.textContent += text.charAt(index);
-          index++;
-          setTimeout(typeChar, 100 + Math.random() * 100);
-        } else {
-          setTimeout(() => this.execute(containerElement), 500);
-        }
-      };
-      setTimeout(typeChar, 1000);
-    },
-  };
-
-  const terminalBody = document.getElementById("terminal-body");
-  const inputSpan = document.getElementById("terminal-input");
-
-  if (terminalBody && inputSpan) {
-    const termObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          termObserver.disconnect();
-          Terminal.startTyping(inputSpan, terminalBody);
-        }
-      },
-      { threshold: 0.1 },
-    );
-    termObserver.observe(terminalBody);
-  }
 
   // Carousel Autoscroll Logic
   const Carousel = {
@@ -615,14 +490,18 @@ document.addEventListener("DOMContentLoaded", function () {
       for (const activity of activities) {
         const imageUrl = this.getActivityImage(activity);
         const typeLabel = this.getActivityTypeLabel(activity.type);
+        // Details (song, document) are the headline; app name sits beside the type label
+        const typeText = activity.details
+          ? `${typeLabel} ${activity.name}`
+          : typeLabel;
+        const headline = activity.details || activity.name;
 
         activitiesHtml += `
                     <div class="activity-card">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${this.escapeHtml(activity.name)}" class="activity-image">` : ""}
                         <div class="activity-info">
-                            <div class="activity-type">${typeLabel}</div>
-                            <div class="activity-name">${this.escapeHtml(activity.name)}</div>
-                            ${activity.details ? `<div class="activity-details">${this.escapeHtml(activity.details)}</div>` : ""}
+                            <div class="activity-type">${this.escapeHtml(typeText)}</div>
+                            <div class="activity-name">${this.escapeHtml(headline)}</div>
                             ${activity.state ? `<div class="activity-state">${this.escapeHtml(activity.state)}</div>` : ""}
                         </div>
                     </div>
@@ -671,6 +550,65 @@ document.addEventListener("DOMContentLoaded", function () {
       return div.innerHTML;
     },
   };
+  // Status: monitor list comes from status.json (written by the homelab every 5 min)
+  // and each card's badges are served directly by Uptime Kuma.
+  const statusBadge = (src, alt) => {
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = alt;
+    img.height = 20;
+    img.loading = "lazy";
+    return img;
+  };
+
+  const createStatusCard = (monitor) => {
+    const badgeBase = `${CONFIG.statusPageUrl}/api/badge/${monitor.id}`;
+    const link = /^https?:\/\//.test(monitor.url ?? "");
+    const card = document.createElement(link ? "a" : "div");
+    card.className = "status-card";
+    if (link) {
+      card.href = monitor.url;
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+      card.title = `Open ${monitor.name}`;
+    }
+
+    const name = document.createElement("span");
+    name.className = "status-card-name";
+    name.textContent = monitor.name;
+
+    const badges = document.createElement("div");
+    badges.className = "status-card-badges";
+    badges.append(
+      statusBadge(`${badgeBase}/status`, `${monitor.name} status`),
+      statusBadge(`${badgeBase}/uptime/24h`, `${monitor.name} 24h uptime`),
+    );
+
+    card.append(name, badges);
+    return card;
+  };
+
+  const loadStatus = async () => {
+    const grid = document.getElementById("status-grid");
+    if (!grid) return;
+    try {
+      const res = await fetch("status.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const cards = data.groups.flatMap((group) =>
+        group.monitors.map(createStatusCard),
+      );
+      grid.replaceChildren(...cards);
+    } catch (e) {
+      console.warn("Failed to load status.json:", e);
+      const msg = document.createElement("p");
+      msg.className = "text-center text-gray-400";
+      msg.textContent = "Status unavailable right now.";
+      grid.replaceChildren(msg);
+    }
+  };
+
+  loadStatus();
 
   Lanyard.init();
 });

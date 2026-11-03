@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Snapshot the public Uptime Kuma status page into the site as status.json so the
+# homepage can list monitors without a CORS proxy. On any failure the previous
+# status.json is left untouched.
+set -euo pipefail
+
+KUMA=${KUMA:-https://status.bl4zee.dev}
+SLUG=${KUMA_SLUG:-h0me}
+SITE=${SITE_DIR:-$HOME/data/bl4zee.dev}
+OUT="$SITE/status.json"
+
+command -v jq >/dev/null || { echo "jq is required" >&2; exit 1; }
+[[ -d $SITE ]] || { echo "site dir $SITE missing" >&2; exit 1; }
+
+tmp=$(mktemp "$SITE/.status.json.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+
+curl -fsS --connect-timeout 10 --max-time 30 "$KUMA/api/status-page/$SLUG" \
+  | jq --arg updated "$(date -u +%FT%TZ)" '{
+      updated: $updated,
+      groups: [.publicGroupList[] | {
+        name: .name,
+        monitors: [.monitorList[] | {id: .id, name: .name, url: (if .sendUrl == 1 and (.url // "") != "" then .url else null end)}]
+      }]
+    }' > "$tmp"
+
+jq -e '.groups | length > 0' "$tmp" >/dev/null || { echo "no monitor groups in response; keeping $OUT" >&2; exit 1; }
+chmod 644 "$tmp"
+mv -f "$tmp" "$OUT"
+trap - EXIT
+echo "wrote $(jq '[.groups[].monitors[]] | length' "$OUT") monitors to $OUT"
