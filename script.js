@@ -614,10 +614,17 @@ document.addEventListener("DOMContentLoaded", function () {
   // provides the read-only API key and username.
   const lastfmCall = async (method, params = {}) => {
     const { apiKey, user } = window.LASTFM_CONFIG;
-    const query = new URLSearchParams({ method, user, api_key: apiKey, format: "json", ...params });
+    const query = new URLSearchParams({
+      method,
+      user,
+      api_key: apiKey,
+      format: "json",
+      ...params,
+    });
     const res = await fetch(`https://ws.audioscrobbler.com/2.0/?${query}`);
     const json = await res.json();
-    if (!res.ok || json.error) throw new Error(json.message ?? `HTTP ${res.status}`);
+    if (!res.ok || json.error)
+      throw new Error(json.message ?? `HTTP ${res.status}`);
     return json;
   };
 
@@ -628,7 +635,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const res = await fetch(`/api/deezer/search/artist?${query}`);
     if (!res.ok) return null;
     const json = await res.json();
-    const match = json.data?.find((a) => a.name.toLowerCase() === name.toLowerCase());
+    const match = json.data?.find(
+      (a) => a.name.toLowerCase() === name.toLowerCase(),
+    );
     return match?.picture_medium ?? null;
   };
 
@@ -640,15 +649,22 @@ document.addEventListener("DOMContentLoaded", function () {
     ]);
     const user = info.user;
     const latest = [recent.recenttracks.track].flat()[0];
-    const pick = (images) => images?.find((i) => i.size === "extralarge")?.["#text"] || null;
+    const pick = (images) =>
+      images?.find((i) => i.size === "extralarge")?.["#text"] || null;
     return {
-      profile: { name: user.name, realname: user.realname || null, image: pick(user.image) },
+      profile: {
+        name: user.name,
+        realname: user.realname || null,
+        image: pick(user.image),
+      },
       stats: {
         scrobbles: Number(user.playcount),
         artists: Number(user.artist_count),
         tracks: Number(user.track_count),
         albums: Number(user.album_count),
-        memberSince: new Date(Number(user.registered.unixtime) * 1000).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+        memberSince: new Date(
+          Number(user.registered.unixtime) * 1000,
+        ).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
       },
       lastTrack: latest
         ? {
@@ -687,7 +703,8 @@ document.addEventListener("DOMContentLoaded", function () {
         cover.width = 64;
         cover.height = 64;
         cover.loading = "lazy";
-        cover.className = "w-16 h-16 rounded-lg border border-gray-700/50 shrink-0";
+        cover.className =
+          "w-16 h-16 rounded-lg border border-gray-700/50 shrink-0";
         nowRow.append(cover);
       }
       const now = document.createElement("p");
@@ -698,9 +715,13 @@ document.addEventListener("DOMContentLoaded", function () {
         link.href = t.url;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        link.className = "font-semibold hover:text-lavender-400 transition-colors";
+        link.className =
+          "font-semibold hover:text-lavender-400 transition-colors";
         link.textContent = `${t.name} – ${t.artist}`;
-        now.append(t.nowPlaying ? "Listening to " : "Last played ", link);
+        now.append(
+          t.nowPlaying ? "Currently scrobbling " : "Last played ",
+          link,
+        );
       } else {
         now.textContent = "Nothing played yet";
       }
@@ -758,7 +779,8 @@ document.addEventListener("DOMContentLoaded", function () {
         term.textContent = label;
         const desc = document.createElement("dd");
         desc.className = "font-display font-semibold text-xl";
-        desc.textContent = typeof value === "number" ? value.toLocaleString() : value;
+        desc.textContent =
+          typeof value === "number" ? value.toLocaleString() : value;
         stats.append(term, desc);
       }
       right.append(allTimeHeading, stats);
@@ -770,13 +792,15 @@ document.addEventListener("DOMContentLoaded", function () {
       avatar.alt = `${data.profile.name} avatar`;
       avatar.width = 80;
       avatar.height = 80;
-      avatar.className = "w-20 h-20 rounded-full border border-gray-700/50 shrink-0";
+      avatar.className =
+        "w-20 h-20 rounded-full border border-gray-700/50 shrink-0";
       const names = document.createElement("div");
       const name = document.createElement("a");
       name.href = `https://www.last.fm/user/${data.profile.name}`;
       name.target = "_blank";
       name.rel = "noopener noreferrer";
-      name.className = "font-display font-bold text-2xl hover:text-lavender-400 transition-colors";
+      name.className =
+        "font-display font-bold text-2xl hover:text-lavender-400 transition-colors";
       name.textContent = data.profile.name;
       names.append(name);
       if (data.profile.realname) {
