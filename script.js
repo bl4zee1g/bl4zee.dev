@@ -610,14 +610,71 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadStatus();
 
-  // Last.fm listening stats: lastfm.json is written by scripts/lastfm-stats.
+  // Live Last.fm data, fetched in the browser. config.js (from scripts/lastfm-config)
+  // provides the read-only API key and username.
+  const lastfmCall = async (method, params = {}) => {
+    const { apiKey, user } = window.LASTFM_CONFIG;
+    const query = new URLSearchParams({ method, user, api_key: apiKey, format: "json", ...params });
+    const res = await fetch(`https://ws.audioscrobbler.com/2.0/?${query}`);
+    const json = await res.json();
+    if (!res.ok || json.error) throw new Error(json.message ?? `HTTP ${res.status}`);
+    return json;
+  };
+
+  // Artist pictures: Deezer has no CORS headers, so the homelab nginx proxies
+  // /api/deezer/ to api.deezer.com and adds Access-Control-Allow-Origin.
+  const deezerArtistImage = async (name) => {
+    const query = new URLSearchParams({ q: name, limit: "5" });
+    const res = await fetch(`/api/deezer/search/artist?${query}`);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const match = json.data?.find((a) => a.name.toLowerCase() === name.toLowerCase());
+    return match?.picture_medium ?? null;
+  };
+
+  const fetchListening = async () => {
+    const [recent, top, info] = await Promise.all([
+      lastfmCall("user.getrecenttracks", { limit: 1 }),
+      lastfmCall("user.gettopartists", { period: "7day", limit: 5 }),
+      lastfmCall("user.getinfo"),
+    ]);
+    const user = info.user;
+    const latest = [recent.recenttracks.track].flat()[0];
+    const pick = (images) => images?.find((i) => i.size === "extralarge")?.["#text"] || null;
+    return {
+      profile: { name: user.name, realname: user.realname || null, image: pick(user.image) },
+      stats: {
+        scrobbles: Number(user.playcount),
+        artists: Number(user.artist_count),
+        tracks: Number(user.track_count),
+        albums: Number(user.album_count),
+        memberSince: new Date(Number(user.registered.unixtime) * 1000).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      },
+      lastTrack: latest
+        ? {
+            name: latest.name,
+            artist: latest.artist["#text"],
+            album: latest.album?.["#text"] || null,
+            url: latest.url,
+            image: pick(latest.image),
+            nowPlaying: latest["@attr"]?.nowplaying === "true",
+          }
+        : null,
+      topArtists: await Promise.all(
+        top.topartists.artist.map(async (a) => ({
+          name: a.name,
+          playcount: Number(a.playcount),
+          url: a.url,
+          image: await deezerArtistImage(a.name).catch(() => null),
+        })),
+      ),
+    };
+  };
   const loadListening = async () => {
     const box = document.getElementById("lastfm-stats");
     if (!box) return;
     try {
-      const res = await fetch("lastfm.json", { cache: "no-cache" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      const data = await fetchListening();
 
       const left = document.createElement("div");
 
