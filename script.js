@@ -719,7 +719,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "font-semibold hover:text-lavender-400 transition-colors";
         link.textContent = `${t.name} – ${t.artist}`;
         now.append(
-          t.nowPlaying ? "Currently scrobbling " : "Last played ",
+          t.nowPlaying ? "Currently scrobbling " : "Last played: ",
           link,
         );
       } else {
