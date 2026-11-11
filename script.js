@@ -610,5 +610,137 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadStatus();
 
+  // Last.fm listening stats: lastfm.json is written by scripts/lastfm-stats.
+  const loadListening = async () => {
+    const box = document.getElementById("lastfm-stats");
+    if (!box) return;
+    try {
+      const res = await fetch("lastfm.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      const left = document.createElement("div");
+
+      const nowRow = document.createElement("div");
+      nowRow.className = "flex items-center gap-4 mb-8";
+      if (data.lastTrack?.image) {
+        const cover = document.createElement("img");
+        cover.src = data.lastTrack.image;
+        cover.alt = `${data.lastTrack.album ?? data.lastTrack.name} cover`;
+        cover.width = 64;
+        cover.height = 64;
+        cover.loading = "lazy";
+        cover.className = "w-16 h-16 rounded-lg border border-gray-700/50 shrink-0";
+        nowRow.append(cover);
+      }
+      const now = document.createElement("p");
+      now.className = "text-lg";
+      if (data.lastTrack) {
+        const t = data.lastTrack;
+        const link = document.createElement("a");
+        link.href = t.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "font-semibold hover:text-lavender-400 transition-colors";
+        link.textContent = `${t.name} – ${t.artist}`;
+        now.append(t.nowPlaying ? "Listening to " : "Last played ", link);
+      } else {
+        now.textContent = "Nothing played yet";
+      }
+      nowRow.append(now);
+
+      const topHeading = document.createElement("h3");
+      topHeading.className = "font-display font-semibold mb-3";
+      topHeading.textContent = "Top artists, last 7 days";
+
+      const list = document.createElement("ol");
+      list.className = "text-gray-300 text-lg space-y-2";
+      for (const artist of data.topArtists) {
+        const li = document.createElement("li");
+        li.className = "flex items-center";
+        if (artist.image) {
+          const pic = document.createElement("img");
+          pic.src = artist.image;
+          pic.alt = "";
+          pic.width = 36;
+          pic.height = 36;
+          pic.loading = "lazy";
+          pic.className = "w-9 h-9 rounded-full mr-3 shrink-0";
+          li.append(pic);
+        }
+        const link = document.createElement("a");
+        link.href = artist.url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.className = "hover:text-lavender-400 transition-colors";
+        link.textContent = artist.name;
+        const plays = document.createElement("span");
+        plays.className = "text-gray-500 text-sm ml-2";
+        plays.textContent = `· ${artist.playcount} plays`;
+        li.append(link, plays);
+        list.append(li);
+      }
+      left.append(nowRow, topHeading, list);
+
+      const right = document.createElement("div");
+      const allTimeHeading = document.createElement("h3");
+      allTimeHeading.className = "font-display font-semibold mb-3";
+      allTimeHeading.textContent = "All time";
+      const stats = document.createElement("dl");
+      stats.className = "grid grid-cols-2 gap-x-8 gap-y-3";
+      const rows = [
+        ["Scrobbles", data.stats.scrobbles],
+        ["Artists", data.stats.artists],
+        ["Tracks", data.stats.tracks],
+        ["Albums", data.stats.albums],
+        ["Member since", data.stats.memberSince],
+      ];
+      for (const [label, value] of rows) {
+        const term = document.createElement("dt");
+        term.className = "text-gray-400 text-sm";
+        term.textContent = label;
+        const desc = document.createElement("dd");
+        desc.className = "font-display font-semibold text-xl";
+        desc.textContent = typeof value === "number" ? value.toLocaleString() : value;
+        stats.append(term, desc);
+      }
+      right.append(allTimeHeading, stats);
+
+      const header = document.createElement("div");
+      header.className = "flex items-center gap-5 mb-8";
+      const avatar = document.createElement("img");
+      avatar.src = data.profile.image;
+      avatar.alt = `${data.profile.name} avatar`;
+      avatar.width = 80;
+      avatar.height = 80;
+      avatar.className = "w-20 h-20 rounded-full border border-gray-700/50 shrink-0";
+      const names = document.createElement("div");
+      const name = document.createElement("a");
+      name.href = `https://www.last.fm/user/${data.profile.name}`;
+      name.target = "_blank";
+      name.rel = "noopener noreferrer";
+      name.className = "font-display font-bold text-2xl hover:text-lavender-400 transition-colors";
+      name.textContent = data.profile.name;
+      names.append(name);
+      if (data.profile.realname) {
+        const real = document.createElement("p");
+        real.className = "text-gray-400";
+        real.textContent = data.profile.realname;
+        names.append(real);
+      }
+      header.append(avatar, names);
+      right.prepend(header);
+      box.replaceChildren(right, left);
+    } catch (e) {
+      console.warn("Failed to load lastfm.json:", e);
+      const msg = document.createElement("p");
+      msg.className = "text-gray-400";
+      msg.textContent = "Listening stats unavailable right now.";
+      box.replaceChildren(msg);
+    }
+  };
+
+  loadListening();
+
   Lanyard.init();
 });

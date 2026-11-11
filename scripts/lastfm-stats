@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# Snapshot Last.fm listening stats into the site as lastfm.json so the homepage
+# can render them without exposing the API key. Reads LASTFM_API_KEY and
+# LASTFM_USER from .env in the repo root (or the environment). Artist pictures
+# come from Deezer's public search API, since Last.fm no longer serves real artist
+# images. On any failure the previous lastfm.json is left untouched.
+set -euo pipefail
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+if [[ -f $ROOT/.env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT/.env"
+  set +a
+fi
+
+: "${LASTFM_API_KEY:?LASTFM_API_KEY is not set (put it in .env)}"
+: "${LASTFM_USER:?LASTFM_USER is not set (put it in .env)}"
+SITE=${SITE_DIR:-$ROOT}
+OUT="$SITE/lastfm.json"
+API=https://ws.audioscrobbler.com/2.0/
+
+command -v jq >/dev/null || { echo "jq is required" >&2; exit 1; }
+[[ -d $SITE ]] || { echo "site dir $SITE missing" >&2; exit 1; }
+
+# $1 = API method, remaining args = extra query params as "key=value"
+call() {
+  local method=$1
+  shift
+  local args=()
+  for kv in "$@"; do args+=(--data-urlencode "$kv"); done
+  curl -fsS -G --connect-timeout 10 --max-time 30 "$API" \
+    --data-urlencode "method=$method" \
+    --data-urlencode "user=$LASTFM_USER" \
+    --data-urlencode "api_key=$LASTFM_API_KEY" \
+    --data-urlencode "format=json" \
+    "${args[@]}"
+}
+
+# Prints the Deezer picture URL for an exact (case-insensitive) artist-name match, or nothing.
+deezer_artist_image() {
+  curl -fsS -G --connect-timeout 10 --max-time 20 https://api.deezer.com/search/artist \
+    --data-urlencode "q=$1" --data-urlencode limit=5 |
+    jq -r --arg n "$1" '[.data[]? | select((.name | ascii_downcase) == ($n | ascii_downcase))][0].picture_medium // empty'
+}
+
+recent=$(call user.getrecenttracks limit=1)
+top=$(call user.gettopartists period=7day limit=5)
+info=$(call user.getinfo)
+
+# Last.fm reports API-level failures (bad key, unknown user) as JSON with an "error" field.
+for r in "$recent" "$top" "$info"; do
+  if jq -e 'has("error")' <<<"$r" >/dev/null; then
+    echo "Last.fm error: $(jq -r '.message' <<<"$r")" >&2
+    exit 1
+  fi
+done
+
+# Artist name -> picture URL; a failed lookup just means no picture.
+artist_images='{}'
+while IFS= read -r name; do
+  img=$(deezer_artist_image "$name" || true)
+  artist_images=$(jq --arg n "$name" --arg i "$img" \
+    '. + {($n): (if $i == "" then null else $i end)}' <<<"$artist_images")
+done < <(jq -r '.topartists.artist[]?.name' <<<"$top")
+
+tmp=$(mktemp "$SITE/.lastfm.json.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+
+jq -n --arg updated "$(date -u +%FT%TZ)" --arg user "$LASTFM_USER" \
+  --argjson recent "$recent" --argjson top "$top" --argjson info "$info" \
+  --argjson artistImages "$artist_images" '
+  def latest: ($recent.recenttracks.track | if type == "array" then .[0] else . end) // null;
+  {
+    updated: $updated,
+    user: $user,
+    profile: {
+      name: $info.user.name,
+      realname: ($info.user.realname | if . == "" then null else . end),
+      image: ([$info.user.image[]? | select(.size == "extralarge") | .["#text"]] | first)
+    },
+    stats: {
+      scrobbles: ($info.user.playcount | tonumber),
+      artists: ($info.user.artist_count | tonumber),
+      tracks: ($info.user.track_count | tonumber),
+      albums: ($info.user.album_count | tonumber),
+      memberSince: ($info.user.registered.unixtime | tonumber | strftime("%b %Y"))
+    },
+    lastTrack: (latest | if . == null then null else {
+      name,
+      artist: .artist["#text"],
+      album: (.album["#text"] // null),
+      url,
+      image: (([.image[]? | select(.size == "extralarge") | .["#text"]] | first) // "" | if . == "" then null else . end),
+      nowPlaying: (.["@attr"].nowplaying == "true")
+    } end),
+    topArtists: [$top.topartists.artist[]? | {
+      name,
+      playcount: (.playcount | tonumber),
+      url,
+      image: ($artistImages[.name] // null)
+    }]
+  }' > "$tmp"
+
+jq -e '.stats.scrobbles != null' "$tmp" >/dev/null || { echo "unexpected response shape; keeping $OUT" >&2; exit 1; }
+chmod 644 "$tmp"
+mv -f "$tmp" "$OUT"
+trap - EXIT
+echo "wrote $OUT ($(jq -r '.stats.scrobbles' "$OUT") scrobbles, $(jq '.topArtists | length' "$OUT") top artists)"
