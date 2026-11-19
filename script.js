@@ -5,6 +5,7 @@ const CONFIG = {
   revealThreshold: 0.1,
   discordUserId: "502866937617973260",
   statusPageUrl: "https://status.bl4zee.dev",
+  rockskyActor: "bl4zee.dev",
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -610,214 +611,255 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadStatus();
 
-  // Live Last.fm data, fetched in the browser. config.js (from scripts/lastfm-config)
-  // provides the read-only API key and username.
-  const lastfmCall = async (method, params = {}) => {
-    const { apiKey, user } = window.LASTFM_CONFIG;
-    const query = new URLSearchParams({
-      method,
-      user,
-      api_key: apiKey,
-      format: "json",
-      ...params,
-    });
-    const res = await fetch(`https://ws.audioscrobbler.com/2.0/?${query}`);
-    const json = await res.json();
-    if (!res.ok || json.error)
-      throw new Error(json.message ?? `HTTP ${res.status}`);
-    return json;
+  // Live Rocksky data, fetched in the browser. Actor reads are public, no token needed.
+  const ROCKSKY_API = "https://api.rocksky.app/xrpc";
+  const rockskyCall = async (nsid, params = {}) => {
+    const res = await fetch(
+      `${ROCKSKY_API}/${nsid}?${new URLSearchParams(params)}`,
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
   };
 
-  // Artist pictures: Deezer has no CORS headers, so the homelab nginx proxies
-  // /api/deezer/ to api.deezer.com and adds Access-Control-Allow-Origin.
-  const deezerArtistImage = async (name) => {
-    const query = new URLSearchParams({ q: name, limit: "5" });
-    const res = await fetch(`/api/deezer/search/artist?${query}`);
-    if (!res.ok) return null;
-    const json = await res.json();
-    const match = json.data?.find(
-      (a) => a.name.toLowerCase() === name.toLowerCase(),
-    );
-    return match?.picture_medium ?? null;
-  };
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const dayString = (ms) => new Date(ms).toISOString().slice(0, 10);
 
   const fetchListening = async () => {
-    const [recent, top, info] = await Promise.all([
-      lastfmCall("user.getrecenttracks", { limit: 1 }),
-      lastfmCall("user.gettopartists", { period: "7day", limit: 5 }),
-      lastfmCall("user.getinfo"),
+    const actor = CONFIG.rockskyActor;
+    const now = Date.now();
+    const weekAgo = new Date(now - 7 * DAY_MS).toISOString();
+    const to = dayString(now);
+    // One chart from the start of history; the 30-day view is a slice of it.
+    const [profile, stats, chart, top, recent] = await Promise.all([
+      rockskyCall("app.rocksky.actor.getProfile", { did: actor }),
+      rockskyCall("app.rocksky.stats.getStats", { did: actor }),
+      rockskyCall("app.rocksky.charts.getScrobblesChart", {
+        did: actor,
+        from: "2000-01-01",
+        to,
+      }),
+      rockskyCall("app.rocksky.charts.getTopArtists", {
+        did: actor,
+        limit: "10",
+        startDate: weekAgo,
+      }),
+      rockskyCall("app.rocksky.actor.getActorScrobbles", {
+        did: actor,
+        limit: "6",
+      }),
     ]);
-    const user = info.user;
-    const latest = [recent.recenttracks.track].flat()[0];
-    const pick = (images) =>
-      images?.find((i) => i.size === "extralarge")?.["#text"] || null;
+    // Days with plays, oldest first. Daily average uses the same span as rocksky.app/analytics:
+    // first active day through today.
+    const days = (chart.scrobbles ?? [])
+      .filter((d) => d.count > 0)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const total = days.reduce((sum, d) => sum + d.count, 0);
+    const spanDays = days.length
+      ? Math.round((Date.parse(to) - Date.parse(days[0].date)) / DAY_MS) + 1
+      : 1;
+    const windowStart = dayString(now - 30 * DAY_MS);
+    const last30 = days.filter((d) => d.date >= windowStart);
+    const busiest = last30.reduce(
+      (best, d) => (!best || d.count > best.count ? d : best),
+      null,
+    );
     return {
       profile: {
-        name: user.name,
-        realname: user.realname || null,
-        image: pick(user.image),
+        name: profile.displayName || profile.handle,
+        handle: profile.handle,
+        avatar: profile.avatar || null,
+        url: `https://rocksky.app/profile/${profile.handle}`,
       },
-      stats: {
-        scrobbles: Number(user.playcount),
-        artists: Number(user.artist_count),
-        tracks: Number(user.track_count),
-        albums: Number(user.album_count),
-        memberSince: new Date(
-          Number(user.registered.unixtime) * 1000,
-        ).toLocaleDateString("en-US", { month: "short", year: "numeric" }),
-      },
-      lastTrack: latest
-        ? {
-            name: latest.name,
-            artist: latest.artist["#text"],
-            album: latest.album?.["#text"] || null,
-            url: latest.url,
-            image: pick(latest.image),
-            nowPlaying: latest["@attr"]?.nowplaying === "true",
-          }
-        : null,
-      topArtists: await Promise.all(
-        top.topartists.artist.map(async (a) => ({
-          name: a.name,
-          playcount: Number(a.playcount),
-          url: a.url,
-          image: await deezerArtistImage(a.name).catch(() => null),
-        })),
-      ),
+      stats,
+      allTime: { perDay: total / spanDays, activeDays: days.length },
+      last30: { activeDays: last30.length, busiest },
+      topArtists: top.artists,
+      recent: recent.scrobbles,
     };
   };
+
+  const make = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text != null) node.textContent = text;
+    return node;
+  };
+
+  // One scrobble row: cover art (or an empty square), title, artist and time.
+  const recentItem = (s) => {
+    const li = make("li", "flex items-center gap-4");
+    if (s.albumArt) {
+      const cover = make(
+        "img",
+        "w-[60px] h-[60px] rounded-lg border border-gray-700/50 shrink-0",
+      );
+      cover.src = s.albumArt;
+      cover.alt = `${s.album || s.title} cover`;
+      cover.width = 60;
+      cover.height = 60;
+      cover.loading = "lazy";
+      li.append(cover);
+    } else {
+      li.append(
+        make(
+          "div",
+          "w-[60px] h-[60px] rounded-lg border border-gray-700/50 bg-gray-800/50 shrink-0",
+        ),
+      );
+    }
+    const when = new Date(s.createdAt).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    const info = make("div", "min-w-0");
+    info.append(
+      make("p", "text-[15px] font-semibold truncate", s.title),
+      make("p", "text-gray-400 text-sm truncate", `${s.artist} · ${when}`),
+    );
+    li.append(info);
+    return li;
+  };
+
   const loadListening = async () => {
-    const box = document.getElementById("lastfm-stats");
+    const box = document.getElementById("rocksky-stats");
     if (!box) return;
+    box.replaceChildren(
+      make("p", "text-gray-400 animate-pulse", "Loading listening stats…"),
+    );
     try {
       const data = await fetchListening();
 
-      const left = document.createElement("div");
-
-      const nowRow = document.createElement("div");
-      nowRow.className = "flex items-center gap-4 mb-8";
-      if (data.lastTrack?.image) {
-        const cover = document.createElement("img");
-        cover.src = data.lastTrack.image;
-        cover.alt = `${data.lastTrack.album ?? data.lastTrack.name} cover`;
-        cover.width = 64;
-        cover.height = 64;
-        cover.loading = "lazy";
-        cover.className =
-          "w-16 h-16 rounded-lg border border-gray-700/50 shrink-0";
-        nowRow.append(cover);
-      }
-      const now = document.createElement("p");
-      now.className = "text-lg";
-      if (data.lastTrack) {
-        const t = data.lastTrack;
-        const link = document.createElement("a");
-        link.href = t.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.className =
-          "font-semibold hover:text-lavender-400 transition-colors";
-        link.textContent = `${t.name} – ${t.artist}`;
-        now.append(
-          t.nowPlaying ? "Currently scrobbling " : "Last played: ",
-          link,
+      // Left: profile and all-time totals
+      const left = make("div", "flex flex-col justify-between");
+      const header = make("div", "flex items-center gap-5 mb-8");
+      if (data.profile.avatar) {
+        const avatar = make(
+          "img",
+          "w-20 h-20 rounded-full border border-gray-700/50 shrink-0",
         );
-      } else {
-        now.textContent = "Nothing played yet";
+        avatar.src = data.profile.avatar;
+        avatar.alt = `${data.profile.name} avatar`;
+        avatar.width = 80;
+        avatar.height = 80;
+        header.append(avatar);
       }
-      nowRow.append(now);
-
-      const topHeading = document.createElement("h3");
-      topHeading.className = "font-display font-semibold mb-3";
-      topHeading.textContent = "Top artists, last 7 days";
-
-      const list = document.createElement("ol");
-      list.className = "text-gray-300 text-lg space-y-2";
-      for (const artist of data.topArtists) {
-        const li = document.createElement("li");
-        li.className = "flex items-center";
-        if (artist.image) {
-          const pic = document.createElement("img");
-          pic.src = artist.image;
-          pic.alt = "";
-          pic.width = 36;
-          pic.height = 36;
-          pic.loading = "lazy";
-          pic.className = "w-9 h-9 rounded-full mr-3 shrink-0";
-          li.append(pic);
-        }
-        const link = document.createElement("a");
-        link.href = artist.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.className = "hover:text-lavender-400 transition-colors";
-        link.textContent = artist.name;
-        const plays = document.createElement("span");
-        plays.className = "text-gray-500 text-sm ml-2";
-        plays.textContent = `· ${artist.playcount} plays`;
-        li.append(link, plays);
-        list.append(li);
-      }
-      left.append(nowRow, topHeading, list);
-
-      const right = document.createElement("div");
-      const allTimeHeading = document.createElement("h3");
-      allTimeHeading.className = "font-display font-semibold mb-3";
-      allTimeHeading.textContent = "All time";
-      const stats = document.createElement("dl");
-      stats.className = "grid grid-cols-2 gap-x-8 gap-y-3";
-      const rows = [
-        ["Scrobbles", data.stats.scrobbles],
-        ["Artists", data.stats.artists],
-        ["Tracks", data.stats.tracks],
-        ["Albums", data.stats.albums],
-        ["Member since", data.stats.memberSince],
-      ];
-      for (const [label, value] of rows) {
-        const term = document.createElement("dt");
-        term.className = "text-gray-400 text-sm";
-        term.textContent = label;
-        const desc = document.createElement("dd");
-        desc.className = "font-display font-semibold text-xl";
-        desc.textContent =
-          typeof value === "number" ? value.toLocaleString() : value;
-        stats.append(term, desc);
-      }
-      right.append(allTimeHeading, stats);
-
-      const header = document.createElement("div");
-      header.className = "flex items-center gap-5 mb-8";
-      const avatar = document.createElement("img");
-      avatar.src = data.profile.image;
-      avatar.alt = `${data.profile.name} avatar`;
-      avatar.width = 80;
-      avatar.height = 80;
-      avatar.className =
-        "w-20 h-20 rounded-full border border-gray-700/50 shrink-0";
-      const names = document.createElement("div");
-      const name = document.createElement("a");
-      name.href = `https://www.last.fm/user/${data.profile.name}`;
+      const names = make("div");
+      const name = make(
+        "a",
+        "font-display font-bold text-2xl hover:text-lavender-400 transition-colors",
+        data.profile.name,
+      );
+      name.href = data.profile.url;
       name.target = "_blank";
       name.rel = "noopener noreferrer";
-      name.className =
-        "font-display font-bold text-2xl hover:text-lavender-400 transition-colors";
-      name.textContent = data.profile.name;
-      names.append(name);
-      if (data.profile.realname) {
-        const real = document.createElement("p");
-        real.className = "text-gray-400";
-        real.textContent = data.profile.realname;
-        names.append(real);
+      names.append(name, make("p", "text-gray-400", `@${data.profile.handle}`));
+      header.append(names);
+      const statGrid = (rows) => {
+        const dl = make(
+          "dl",
+          "grid grid-cols-2 items-baseline gap-x-8 gap-y-1",
+        );
+        for (const [label, value] of rows) {
+          dl.append(
+            make("dt", "text-gray-400 text-sm", label),
+            make("dd", "font-display font-semibold text-xl", value),
+          );
+        }
+        return dl;
+      };
+      const shortDate = (iso) =>
+        new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          timeZone: "UTC",
+        });
+      const busiestText = data.last30.busiest
+        ? `${shortDate(data.last30.busiest.date)} · ${data.last30.busiest.count}`
+        : "—";
+      left.append(
+        header,
+        make("h3", "font-display font-semibold mb-3", "All time"),
+        statGrid([
+          ["Scrobbles", data.stats.scrobbles.toLocaleString()],
+          ["Artists", data.stats.artists.toLocaleString()],
+          ["Albums", data.stats.albums.toLocaleString()],
+          ["Tracks", data.stats.tracks.toLocaleString()],
+          ["Daily average", data.allTime.perDay.toFixed(1)],
+          ["Active days", data.allTime.activeDays.toLocaleString()],
+        ]),
+        make("h3", "font-display font-semibold mb-3 mt-8", "Last 30 days"),
+        statGrid([
+          ["Active days", data.last30.activeDays.toLocaleString()],
+          ["Busiest day", busiestText],
+        ]),
+      );
+
+      // Right: top artists, last 7 days
+      const right = make("div", "flex flex-col justify-between");
+      right.append(
+        make(
+          "h3",
+          "font-display font-semibold mb-3",
+          "Top artists, last 7 days",
+        ),
+      );
+      if (data.topArtists.length === 0) {
+        right.append(make("p", "text-gray-400", "No plays in the last 7 days"));
+      } else {
+        const list = make("ol", "text-gray-300 text-lg flex flex-col justify-between flex-1");
+        for (const artist of data.topArtists) {
+          const li = make("li", "flex items-center");
+          if (artist.picture) {
+            const pic = make("img", "w-9 h-9 rounded-full mr-3 shrink-0");
+            pic.src = artist.picture;
+            pic.alt = "";
+            pic.width = 36;
+            pic.height = 36;
+            pic.loading = "lazy";
+            li.append(pic);
+          }
+          li.append(
+            make("span", "", artist.name),
+            make(
+              "span",
+              "text-gray-500 text-sm ml-2",
+              `· ${artist.playCount} plays`,
+            ),
+          );
+          list.append(li);
+        }
+        right.append(list);
       }
-      header.append(avatar, names);
-      right.prepend(header);
-      box.replaceChildren(right, left);
+
+      // Third column: last 5 scrobbles with cover art
+      const recentBox = make("div", "min-w-0 flex flex-col justify-between");
+      recentBox.append(
+        make("h3", "font-display font-semibold mb-3", "Recent scrobbles"),
+      );
+      const recentList = make("ul", "flex flex-col justify-between flex-1");
+      recentList.replaceChildren(...data.recent.map(recentItem));
+      recentBox.append(recentList);
+
+      box.replaceChildren(left, right, recentBox);
+      // Rocksky's live feed needs a token, so the recent list re-polls instead.
+      setInterval(async () => {
+        try {
+          const { scrobbles } = await rockskyCall(
+            "app.rocksky.actor.getActorScrobbles",
+            { did: CONFIG.rockskyActor, limit: "6" },
+          );
+          recentList.replaceChildren(...scrobbles.map(recentItem));
+        } catch (e) {
+          console.warn("Failed to refresh Rocksky scrobbles:", e);
+        }
+      }, 30 * 1000);
     } catch (e) {
-      console.warn("Failed to load lastfm.json:", e);
-      const msg = document.createElement("p");
-      msg.className = "text-gray-400";
-      msg.textContent = "Listening stats unavailable right now.";
-      box.replaceChildren(msg);
+      console.warn("Failed to load Rocksky data:", e);
+      box.replaceChildren(
+        make("p", "text-gray-400", "Listening stats unavailable right now."),
+      );
     }
   };
 
