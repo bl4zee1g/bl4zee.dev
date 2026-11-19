@@ -874,7 +874,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "Now playing",
         );
 
-        const info = make("div", "min-w-0");
+        const info = make("div", "min-w-0 flex-1");
         info.append(
           make("p", "text-[15px] font-semibold truncate", track.track_name),
           make("p", "text-gray-400 text-sm truncate", track.artist_name),
