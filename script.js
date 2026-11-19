@@ -833,16 +833,142 @@ document.addEventListener("DOMContentLoaded", function () {
         right.append(list);
       }
 
-      // Third column: last 5 scrobbles with cover art
+      // Third column: now playing (when active) above the last 5 scrobbles with cover art
       const recentBox = make("div", "min-w-0 flex flex-col justify-between");
-      recentBox.append(
-        make("h3", "font-display font-semibold mb-3", "Recent scrobbles"),
+      const recentHeading = make(
+        "h3",
+        "font-display font-semibold mb-3",
+        "Recent scrobbles",
       );
       const recentList = make("ul", "flex flex-col justify-between flex-1");
       recentList.replaceChildren(...data.recent.map(recentItem));
-      recentBox.append(recentList);
+      recentBox.append(recentHeading, recentList);
 
       box.replaceChildren(left, right, recentBox);
+
+      // Shown at the top of the recent column only while a track is playing.
+      let nowBox = null;
+      let progress = null; // { bar, startMs, durationMs } for the estimated progress bar
+      const updateProgress = () => {
+        if (!progress) return;
+        const elapsed = Date.now() - progress.startMs;
+        const pct = Math.min(Math.max(elapsed / progress.durationMs, 0), 1);
+        progress.bar.style.width = `${pct * 100}%`;
+      };
+      const renderNowPlaying = (listen) => {
+        if (!listen) {
+          nowBox?.remove();
+          nowBox = null;
+          progress = null;
+          return;
+        }
+        const { track_metadata: track, inserted_at: startSec } = listen;
+        const durationMs = track.additional_info?.duration_ms;
+
+        const heading = make(
+          "h3",
+          "font-display font-semibold mb-3 flex items-center gap-2",
+        );
+        heading.append(
+          make("span", "w-2 h-2 rounded-full bg-lavender-400 animate-pulse"),
+          "Now playing",
+        );
+
+        const info = make("div", "min-w-0");
+        info.append(
+          make("p", "text-[15px] font-semibold truncate", track.track_name),
+          make("p", "text-gray-400 text-sm truncate", track.artist_name),
+        );
+        progress = null;
+        if (durationMs > 0) {
+          const barWrap = make(
+            "div",
+            "h-1 rounded-full bg-gray-700/50 mt-3 overflow-hidden",
+          );
+          const bar = make("div", "h-full rounded-full bg-lavender-400");
+          barWrap.append(bar);
+          info.append(barWrap);
+          progress = { bar, startMs: startSec * 1000, durationMs };
+          updateProgress();
+        }
+
+        const cover = make(
+          "div",
+          "w-[60px] h-[60px] rounded-lg border border-gray-700/50 bg-gray-800/50 shrink-0 overflow-hidden",
+        );
+        nowCover = cover;
+        const li = make("li", "flex items-center gap-4");
+        li.append(cover, info);
+        const list = make("ul", "flex flex-col");
+        list.append(li);
+
+        const key = `${track.artist_name}\n${track.track_name}`;
+        const alt = `${track.release_name || track.track_name} cover`;
+        nowKey = key;
+        if (coverUrls.has(key)) {
+          applyCover(coverUrls.get(key), alt);
+        } else {
+          fetchCoverUrl(track.artist_name, track.track_name)
+            .then((url) => {
+              coverUrls.set(key, url);
+              if (nowKey === key) applyCover(url, alt);
+            })
+            .catch((e) => console.warn("Failed to load now playing cover:", e));
+        }
+
+        if (!nowBox) {
+          nowBox = make("div", "min-w-0 mb-8");
+          recentBox.prepend(nowBox);
+        }
+        nowBox.replaceChildren(heading, list);
+      };
+      // Cover art: Rocksky's playing-now has none, so look the track up on iTunes
+      // (CORS-open). Null results are cached so unknown tracks don't refetch.
+      const coverUrls = new Map(); // "artist\ntrack" -> artwork URL or null
+      let nowKey = null;
+      let nowCover = null;
+      const fetchCoverUrl = async (artist, title) => {
+        const q = new URLSearchParams({
+          term: `${artist} ${title}`,
+          entity: "song",
+          limit: "1",
+        });
+        const res = await fetch(`https://itunes.apple.com/search?${q}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { results } = await res.json();
+        return (
+          results[0]?.artworkUrl100?.replace("100x100bb", "300x300bb") ?? null
+        );
+      };
+      const applyCover = (url, alt) => {
+        if (!url || !nowCover) return;
+        const img = make("img", "w-full h-full object-cover");
+        img.src = url;
+        img.alt = alt;
+        img.width = 60;
+        img.height = 60;
+        nowCover.replaceChildren(img);
+      };
+      const fetchNowPlaying = async () => {
+        const res = await fetch(
+          `https://audioscrobbler.rocksky.app/1/user/${CONFIG.rockskyActor}/playing-now`,
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { payload } = await res.json();
+        return payload?.listens?.find((l) => l.playing_now) ?? null;
+      };
+      const refreshNowPlaying = async () => {
+        try {
+          renderNowPlaying(await fetchNowPlaying());
+        } catch (e) {
+          console.warn("Failed to load now playing:", e);
+          renderNowPlaying(null);
+        }
+      };
+      refreshNowPlaying();
+      setInterval(refreshNowPlaying, 15 * 1000);
+      setInterval(updateProgress, 1000);
+
       // Rocksky's live feed needs a token, so the recent list re-polls instead.
       setInterval(async () => {
         try {
