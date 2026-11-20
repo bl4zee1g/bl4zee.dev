@@ -5,7 +5,7 @@ const CONFIG = {
   revealThreshold: 0.1,
   discordUserId: "502866937617973260",
   statusPageUrl: "https://status.bl4zee.dev",
-  koitoUrl: "https://koito.bl4zee.dev",
+  koitoUrl: "https://koitodev.bl4zee.dev",
   scrobbleUser: "bl4zee",
   scrobbleAvatar: "https://femboy.beauty/HDvVlX",
 };
@@ -866,12 +866,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Shown at the top of the recent column only while a track is playing.
       let nowBox = null;
-      const renderNowPlaying = (track) => {
-        if (!track) {
+      let progress = null; // { bar, startMs, durationMs } for the estimated progress bar
+      const updateProgress = () => {
+        if (!progress) return;
+        const elapsed = Date.now() - progress.startMs;
+        const pct = Math.min(Math.max(elapsed / progress.durationMs, 0), 1);
+        progress.bar.style.width = `${pct * 100}%`;
+      };
+      const renderNowPlaying = (np) => {
+        if (!np) {
           nowBox?.remove();
           nowBox = null;
+          progress = null;
           return;
         }
+        const track = np.track;
         const heading = make(
           "h3",
           "font-display font-semibold mb-3 flex items-center gap-2",
@@ -886,6 +895,19 @@ document.addEventListener("DOMContentLoaded", function () {
           make("p", "text-[15px] font-semibold truncate", track.title),
           make("p", "text-gray-400 text-sm truncate", artistLine(track)),
         );
+        progress = null;
+        const durationMs = track.duration * 1000;
+        if (np.started_at && durationMs > 0) {
+          const barWrap = make(
+            "div",
+            "h-1 rounded-full bg-gray-700/50 mt-3 overflow-hidden",
+          );
+          const bar = make("div", "h-full rounded-full bg-lavender-400");
+          barWrap.append(bar);
+          info.append(barWrap);
+          progress = { bar, startMs: Date.parse(np.started_at), durationMs };
+          updateProgress();
+        }
 
         const cover = make(
           "div",
@@ -909,7 +931,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const refreshNowPlaying = async () => {
         try {
           const np = await koitoCall("/now-playing");
-          renderNowPlaying(np.currently_playing ? np.track : null);
+          renderNowPlaying(np.currently_playing ? np : null);
         } catch (e) {
           console.warn("Failed to load now playing:", e);
           renderNowPlaying(null);
@@ -917,6 +939,7 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       refreshNowPlaying();
       setInterval(refreshNowPlaying, 15 * 1000);
+      setInterval(updateProgress, 1000);
 
       setInterval(async () => {
         try {
