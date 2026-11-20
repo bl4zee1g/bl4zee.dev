@@ -5,7 +5,7 @@ const CONFIG = {
   revealThreshold: 0.1,
   discordUserId: "502866937617973260",
   statusPageUrl: "https://status.bl4zee.dev",
-  koitoUrl: "https://koitodev.bl4zee.dev",
+  koitoUrl: "https://koito.bl4zee.dev",
   scrobbleUser: "bl4zee",
   scrobbleAvatar: "https://femboy.beauty/HDvVlX",
 };
@@ -660,7 +660,9 @@ document.addEventListener("DOMContentLoaded", function () {
       last30: activity ? { activeDays: days.length, busiest } : null,
       currentStreak: activity?.streak ?? null,
       avgDailyPlays:
-        stats?.avg_daily_plays == null ? null : Math.round(stats.avg_daily_plays),
+        stats?.avg_daily_plays == null
+          ? null
+          : Math.round(stats.avg_daily_plays),
       tracksPerArtist: stats?.tracks_per_artist ?? null,
       albumsPerArtist: stats?.albums_per_artist ?? null,
       topArtists:
@@ -715,7 +717,9 @@ document.addEventListener("DOMContentLoaded", function () {
       make("p", "text-[15px] font-semibold truncate", track.title),
       make(
         "p",
-        multiArtist ? "text-gray-400 text-sm" : "text-gray-400 text-sm truncate",
+        multiArtist
+          ? "text-gray-400 text-sm"
+          : "text-gray-400 text-sm truncate",
         artistLine(track),
       ),
     );
@@ -828,7 +832,10 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (data.topArtists.length === 0) {
         right.append(make("p", "text-gray-400", "No plays in the last 7 days"));
       } else {
-        const list = make("ol", "text-gray-300 text-lg flex flex-col justify-between flex-1");
+        const list = make(
+          "ol",
+          "text-gray-300 text-lg flex flex-col justify-between flex-1",
+        );
         for (const artist of data.topArtists) {
           const li = make("li", "flex items-center gap-3");
           const frame = make(
