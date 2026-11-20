@@ -5,7 +5,9 @@ const CONFIG = {
   revealThreshold: 0.1,
   discordUserId: "502866937617973260",
   statusPageUrl: "https://status.bl4zee.dev",
-  rockskyActor: "bl4zee.dev",
+  koitoUrl: "https://koito.bl4zee.dev",
+  scrobbleUser: "bl4zee",
+  scrobbleAvatar: "https://femboy.beauty/HDvVlX",
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -611,70 +613,63 @@ document.addEventListener("DOMContentLoaded", function () {
 
   loadStatus();
 
-  // Live Rocksky data, fetched in the browser. Actor reads are public, no token needed.
-  const ROCKSKY_API = "https://api.rocksky.app/xrpc";
-  const rockskyCall = async (nsid, params = {}) => {
-    const res = await fetch(
-      `${ROCKSKY_API}/${nsid}?${new URLSearchParams(params)}`,
-    );
+  // Listening data from my self-hosted Koito instance, fetched in the browser.
+  // Public web reads need no token; the instance must allow this origin via KOITO_CORS_ALLOWED_ORIGINS.
+  const KOITO_API = `${CONFIG.koitoUrl}/apis/web/v1`;
+  // Koito serves this image ID for tracks with no artwork.
+  const NO_IMAGE_ID = "00000000-0000-0000-0000-000000000000";
+  const koitoCall = async (path) => {
+    const res = await fetch(`${KOITO_API}${path}`, {
+      signal: AbortSignal.timeout(10 * 1000),
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();
   };
 
-  const DAY_MS = 24 * 60 * 60 * 1000;
-  const dayString = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const shortDate = (iso) =>
+    new Date(iso).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    });
 
   const fetchListening = async () => {
-    const actor = CONFIG.rockskyActor;
-    const now = Date.now();
-    const weekAgo = new Date(now - 7 * DAY_MS).toISOString();
-    const to = dayString(now);
-    // One chart from the start of history; the 30-day view is a slice of it.
-    const [profile, stats, chart, top, recent] = await Promise.all([
-      rockskyCall("app.rocksky.actor.getProfile", { did: actor }),
-      rockskyCall("app.rocksky.stats.getStats", { did: actor }),
-      rockskyCall("app.rocksky.charts.getScrobblesChart", {
-        did: actor,
-        from: "2000-01-01",
-        to,
-      }),
-      rockskyCall("app.rocksky.charts.getTopArtists", {
-        did: actor,
-        limit: "10",
-        startDate: weekAgo,
-      }),
-      rockskyCall("app.rocksky.actor.getActorScrobbles", {
-        did: actor,
-        limit: "6",
-      }),
+    // A failed or timed-out call empties only its own section instead of blocking the panel.
+    const soft = (call) =>
+      call.catch((e) => {
+        console.warn("Koito call failed:", e);
+        return null;
+      });
+    const [stats, activity, artists, recent] = await Promise.all([
+      soft(koitoCall("/stats?period=all_time")),
+      soft(koitoCall("/listen-activity?range=30&step=day")),
+      soft(koitoCall("/top/artists?period=week&limit=10")),
+      soft(koitoCall("/listens?period=all_time&limit=6")),
     ]);
-    // Days with plays, oldest first. Daily average uses the same span as rocksky.app/analytics:
-    // first active day through today.
-    const days = (chart.scrobbles ?? [])
-      .filter((d) => d.count > 0)
-      .sort((a, b) => a.date.localeCompare(b.date));
-    const total = days.reduce((sum, d) => sum + d.count, 0);
-    const spanDays = days.length
-      ? Math.round((Date.parse(to) - Date.parse(days[0].date)) / DAY_MS) + 1
-      : 1;
-    const windowStart = dayString(now - 30 * DAY_MS);
-    const last30 = days.filter((d) => d.date >= windowStart);
-    const busiest = last30.reduce(
-      (best, d) => (!best || d.count > best.count ? d : best),
+    // Only days with listens count toward active days and the busiest day.
+    const days = (activity?.activity ?? []).filter((d) => d.listens > 0);
+    const busiest = days.reduce(
+      (best, d) => (!best || d.listens > best.listens ? d : best),
       null,
     );
     return {
-      profile: {
-        name: profile.displayName || profile.handle,
-        handle: profile.handle,
-        avatar: profile.avatar || null,
-        url: `https://rocksky.app/profile/${profile.handle}`,
-      },
-      stats,
-      allTime: { perDay: total / spanDays, activeDays: days.length },
-      last30: { activeDays: last30.length, busiest },
-      topArtists: top.artists,
-      recent: recent.scrobbles,
+      scrobbles: stats?.listen_count ?? null,
+      minutes: stats?.minutes_listened ?? null,
+      daysActive: stats?.days_active ?? null,
+      tracks: stats?.track_count ?? null,
+      last30: activity ? { activeDays: days.length, busiest } : null,
+      currentStreak: activity?.streak ?? null,
+      avgDailyPlays:
+        stats?.avg_daily_plays == null ? null : Math.round(stats.avg_daily_plays),
+      tracksPerArtist: stats?.tracks_per_artist ?? null,
+      albumsPerArtist: stats?.albums_per_artist ?? null,
+      topArtists:
+        artists?.items.map(({ item }) => ({
+          name: item.name,
+          plays: item.listen_count,
+          image: item.image,
+        })) ?? null,
+      recent: recent?.items ?? [],
     };
   };
 
@@ -685,45 +680,60 @@ document.addEventListener("DOMContentLoaded", function () {
     return node;
   };
 
-  // One scrobble row: cover art (or an empty square), title, artist and time.
-  const recentItem = (s) => {
+  // Koito image paths are relative to the instance. Placeholder IDs mean no artwork.
+  const coverUrl = (image) =>
+    image?.small && !image.small.includes(NO_IMAGE_ID)
+      ? `${CONFIG.koitoUrl}${image.small}`
+      : null;
+  const setCover = (frame, url, alt) => {
+    const img = make("img", "w-full h-full object-cover");
+    img.src = url;
+    img.alt = alt;
+    img.width = 60;
+    img.height = 60;
+    img.loading = "lazy";
+    frame.replaceChildren(img);
+  };
+
+  const artistLine = (track) => track.artists.map((a) => a.name).join(", ");
+
+  // One listen row: cover art (or an empty square), title, artist and time.
+  // Multi-artist rows show every artist in full and drop the time, since the names need the room.
+  const recentItem = (listen) => {
+    const track = listen.track;
+    const multiArtist = track.artists.length > 1;
     const li = make("li", "flex items-center gap-4");
-    if (s.albumArt) {
-      const cover = make(
-        "img",
-        "w-[60px] h-[60px] rounded-lg border border-gray-700/50 shrink-0",
-      );
-      cover.src = s.albumArt;
-      cover.alt = `${s.album || s.title} cover`;
-      cover.width = 60;
-      cover.height = 60;
-      cover.loading = "lazy";
-      li.append(cover);
-    } else {
-      li.append(
-        make(
-          "div",
-          "w-[60px] h-[60px] rounded-lg border border-gray-700/50 bg-gray-800/50 shrink-0",
-        ),
-      );
-    }
-    const when = new Date(s.createdAt).toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    const info = make("div", "min-w-0");
+    const frame = make(
+      "div",
+      "w-[60px] h-[60px] rounded-lg border border-gray-700/50 bg-gray-800/50 shrink-0 overflow-hidden",
+    );
+    li.append(frame);
+    const url = coverUrl(track.image);
+    if (url) setCover(frame, url, `${track.title} cover`);
+    const info = make("div", "min-w-0 flex-1");
     info.append(
-      make("p", "text-[15px] font-semibold truncate", s.title),
-      make("p", "text-gray-400 text-sm truncate", `${s.artist} · ${when}`),
+      make("p", "text-[15px] font-semibold truncate", track.title),
+      make(
+        "p",
+        multiArtist ? "text-gray-400 text-sm" : "text-gray-400 text-sm truncate",
+        artistLine(track),
+      ),
     );
     li.append(info);
+    if (!multiArtist) {
+      const when = new Date(listen.time).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      });
+      li.append(make("p", "text-gray-400 text-sm shrink-0 text-right", when));
+    }
     return li;
   };
 
   const loadListening = async () => {
-    const box = document.getElementById("rocksky-stats");
+    const box = document.getElementById("listening-stats");
     if (!box) return;
     box.replaceChildren(
       make("p", "text-gray-400 animate-pulse", "Loading listening stats…"),
@@ -731,31 +741,32 @@ document.addEventListener("DOMContentLoaded", function () {
     try {
       const data = await fetchListening();
 
-      // Left: profile and all-time totals
-      const left = make("div", "flex flex-col justify-between");
+      // Left: profile and totals. null (stat unavailable) shows as a dash.
+      const left = make("div", "flex flex-col");
       const header = make("div", "flex items-center gap-5 mb-8");
-      if (data.profile.avatar) {
-        const avatar = make(
-          "img",
-          "w-20 h-20 rounded-full border border-gray-700/50 shrink-0",
-        );
-        avatar.src = data.profile.avatar;
-        avatar.alt = `${data.profile.name} avatar`;
-        avatar.width = 80;
-        avatar.height = 80;
-        header.append(avatar);
-      }
+      const avatar = make(
+        "img",
+        "w-20 h-20 rounded-full border border-gray-700/50 shrink-0",
+      );
+      avatar.src = CONFIG.scrobbleAvatar;
+      avatar.alt = `${CONFIG.scrobbleUser} avatar`;
+      avatar.width = 80;
+      avatar.height = 80;
       const names = make("div");
       const name = make(
         "a",
         "font-display font-bold text-2xl hover:text-lavender-400 transition-colors",
-        data.profile.name,
+        CONFIG.scrobbleUser,
       );
-      name.href = data.profile.url;
+      name.href = CONFIG.koitoUrl;
       name.target = "_blank";
       name.rel = "noopener noreferrer";
-      names.append(name, make("p", "text-gray-400", `@${data.profile.handle}`));
-      header.append(names);
+      const subtitle =
+        data.currentStreak == null
+          ? "on Koito"
+          : `on a ${data.currentStreak} day listening streak`;
+      names.append(name, make("p", "text-gray-400", subtitle));
+      header.append(avatar, names);
       const statGrid = (rows) => {
         const dl = make(
           "dl",
@@ -769,30 +780,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return dl;
       };
-      const shortDate = (iso) =>
-        new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          timeZone: "UTC",
-        });
-      const busiestText = data.last30.busiest
-        ? `${shortDate(data.last30.busiest.date)} · ${data.last30.busiest.count}`
+      const shown = (n) => (n == null ? "—" : n.toLocaleString());
+      const fixed = (n) => (n == null ? "—" : n.toFixed(1));
+      const busiest = data.last30?.busiest;
+      const busiestText = busiest
+        ? `${shortDate(busiest.start_time)} · ${busiest.listens}`
         : "—";
       left.append(
         header,
-        make("h3", "font-display font-semibold mb-3", "All time"),
+        make("h3", "font-display font-semibold mb-2", "All time"),
         statGrid([
-          ["Scrobbles", data.stats.scrobbles.toLocaleString()],
-          ["Artists", data.stats.artists.toLocaleString()],
-          ["Albums", data.stats.albums.toLocaleString()],
-          ["Tracks", data.stats.tracks.toLocaleString()],
-          ["Daily average", data.allTime.perDay.toFixed(1)],
-          ["Active days", data.allTime.activeDays.toLocaleString()],
+          ["Scrobbles", shown(data.scrobbles)],
+          ["Minutes listened", shown(data.minutes)],
+          ["Days active", shown(data.daysActive)],
+          ["Tracks", shown(data.tracks)],
         ]),
-        make("h3", "font-display font-semibold mb-3 mt-8", "Last 30 days"),
+        make("h3", "font-display font-semibold mb-2 mt-4", "Last 30 days"),
         statGrid([
-          ["Active days", data.last30.activeDays.toLocaleString()],
+          ["Active days", data.last30 ? shown(data.last30.activeDays) : "—"],
           ["Busiest day", busiestText],
+        ]),
+        make("h3", "font-display font-semibold mb-2 mt-4", "Average"),
+        statGrid([
+          ["Daily plays", shown(data.avgDailyPlays)],
+          ["Tracks / artist", fixed(data.tracksPerArtist)],
+          ["Albums / artist", fixed(data.albumsPerArtist)],
         ]),
       );
 
@@ -805,27 +817,33 @@ document.addEventListener("DOMContentLoaded", function () {
           "Top artists, last 7 days",
         ),
       );
-      if (data.topArtists.length === 0) {
+      if (data.topArtists === null) {
+        right.append(
+          make(
+            "p",
+            "text-gray-400",
+            "Top artists aren't available from Koito right now.",
+          ),
+        );
+      } else if (data.topArtists.length === 0) {
         right.append(make("p", "text-gray-400", "No plays in the last 7 days"));
       } else {
         const list = make("ol", "text-gray-300 text-lg flex flex-col justify-between flex-1");
         for (const artist of data.topArtists) {
-          const li = make("li", "flex items-center");
-          if (artist.picture) {
-            const pic = make("img", "w-9 h-9 rounded-full mr-3 shrink-0");
-            pic.src = artist.picture;
-            pic.alt = "";
-            pic.width = 36;
-            pic.height = 36;
-            pic.loading = "lazy";
-            li.append(pic);
-          }
+          const li = make("li", "flex items-center gap-3");
+          const frame = make(
+            "div",
+            "w-10 h-10 rounded-full border border-gray-700/50 bg-gray-800/50 shrink-0 overflow-hidden",
+          );
+          const url = coverUrl(artist.image);
+          if (url) setCover(frame, url, `${artist.name} artwork`);
           li.append(
-            make("span", "", artist.name),
+            frame,
+            make("span", "min-w-0 flex-1 truncate", artist.name),
             make(
               "span",
-              "text-gray-500 text-sm ml-2",
-              `· ${artist.playCount} plays`,
+              "text-gray-500 text-sm shrink-0",
+              `· ${artist.plays} plays`,
             ),
           );
           list.append(li);
@@ -833,7 +851,7 @@ document.addEventListener("DOMContentLoaded", function () {
         right.append(list);
       }
 
-      // Third column: now playing (when active) above the last 5 scrobbles with cover art
+      // Third column: now playing (when active) above the last 6 listens with cover art
       const recentBox = make("div", "min-w-0 flex flex-col justify-between");
       const recentHeading = make(
         "h3",
@@ -848,23 +866,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Shown at the top of the recent column only while a track is playing.
       let nowBox = null;
-      let progress = null; // { bar, startMs, durationMs } for the estimated progress bar
-      const updateProgress = () => {
-        if (!progress) return;
-        const elapsed = Date.now() - progress.startMs;
-        const pct = Math.min(Math.max(elapsed / progress.durationMs, 0), 1);
-        progress.bar.style.width = `${pct * 100}%`;
-      };
-      const renderNowPlaying = (listen) => {
-        if (!listen) {
+      const renderNowPlaying = (track) => {
+        if (!track) {
           nowBox?.remove();
           nowBox = null;
-          progress = null;
           return;
         }
-        const { track_metadata: track, inserted_at: startSec } = listen;
-        const durationMs = track.additional_info?.duration_ms;
-
         const heading = make(
           "h3",
           "font-display font-semibold mb-3 flex items-center gap-2",
@@ -876,90 +883,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const info = make("div", "min-w-0 flex-1");
         info.append(
-          make("p", "text-[15px] font-semibold truncate", track.track_name),
-          make("p", "text-gray-400 text-sm truncate", track.artist_name),
+          make("p", "text-[15px] font-semibold truncate", track.title),
+          make("p", "text-gray-400 text-sm truncate", artistLine(track)),
         );
-        progress = null;
-        if (durationMs > 0) {
-          const barWrap = make(
-            "div",
-            "h-1 rounded-full bg-gray-700/50 mt-3 overflow-hidden",
-          );
-          const bar = make("div", "h-full rounded-full bg-lavender-400");
-          barWrap.append(bar);
-          info.append(barWrap);
-          progress = { bar, startMs: startSec * 1000, durationMs };
-          updateProgress();
-        }
 
         const cover = make(
           "div",
           "w-[60px] h-[60px] rounded-lg border border-gray-700/50 bg-gray-800/50 shrink-0 overflow-hidden",
         );
-        nowCover = cover;
         const li = make("li", "flex items-center gap-4");
         li.append(cover, info);
         const list = make("ul", "flex flex-col");
         list.append(li);
 
-        const key = `${track.artist_name}\n${track.track_name}`;
-        const alt = `${track.release_name || track.track_name} cover`;
-        nowKey = key;
-        if (coverUrls.has(key)) {
-          applyCover(coverUrls.get(key), alt);
-        } else {
-          fetchCoverUrl(track.artist_name, track.track_name)
-            .then((url) => {
-              coverUrls.set(key, url);
-              if (nowKey === key) applyCover(url, alt);
-            })
-            .catch((e) => console.warn("Failed to load now playing cover:", e));
-        }
+        const url = coverUrl(track.image);
+        if (url) setCover(cover, url, `${track.title} cover`);
 
         if (!nowBox) {
-          nowBox = make("div", "min-w-0 mb-8");
+          nowBox = make("div", "min-w-0 mb-4");
           recentBox.prepend(nowBox);
         }
         nowBox.replaceChildren(heading, list);
       };
-      // Cover art: Rocksky's playing-now has none, so look the track up on iTunes
-      // (CORS-open). Null results are cached so unknown tracks don't refetch.
-      const coverUrls = new Map(); // "artist\ntrack" -> artwork URL or null
-      let nowKey = null;
-      let nowCover = null;
-      const fetchCoverUrl = async (artist, title) => {
-        const q = new URLSearchParams({
-          term: `${artist} ${title}`,
-          entity: "song",
-          limit: "1",
-        });
-        const res = await fetch(`https://itunes.apple.com/search?${q}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { results } = await res.json();
-        return (
-          results[0]?.artworkUrl100?.replace("100x100bb", "300x300bb") ?? null
-        );
-      };
-      const applyCover = (url, alt) => {
-        if (!url || !nowCover) return;
-        const img = make("img", "w-full h-full object-cover");
-        img.src = url;
-        img.alt = alt;
-        img.width = 60;
-        img.height = 60;
-        nowCover.replaceChildren(img);
-      };
-      const fetchNowPlaying = async () => {
-        const res = await fetch(
-          `https://audioscrobbler.rocksky.app/1/user/${CONFIG.rockskyActor}/playing-now`,
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { payload } = await res.json();
-        return payload?.listens?.find((l) => l.playing_now) ?? null;
-      };
+      // now-playing returns the current track only while Koito has one.
       const refreshNowPlaying = async () => {
         try {
-          renderNowPlaying(await fetchNowPlaying());
+          const np = await koitoCall("/now-playing");
+          renderNowPlaying(np.currently_playing ? np.track : null);
         } catch (e) {
           console.warn("Failed to load now playing:", e);
           renderNowPlaying(null);
@@ -967,22 +917,17 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       refreshNowPlaying();
       setInterval(refreshNowPlaying, 15 * 1000);
-      setInterval(updateProgress, 1000);
 
-      // Rocksky's live feed needs a token, so the recent list re-polls instead.
       setInterval(async () => {
         try {
-          const { scrobbles } = await rockskyCall(
-            "app.rocksky.actor.getActorScrobbles",
-            { did: CONFIG.rockskyActor, limit: "6" },
-          );
-          recentList.replaceChildren(...scrobbles.map(recentItem));
+          const res = await koitoCall("/listens?period=all_time&limit=6");
+          recentList.replaceChildren(...res.items.map(recentItem));
         } catch (e) {
-          console.warn("Failed to refresh Rocksky scrobbles:", e);
+          console.warn("Failed to refresh Koito listens:", e);
         }
       }, 30 * 1000);
     } catch (e) {
-      console.warn("Failed to load Rocksky data:", e);
+      console.warn("Failed to load Koito data:", e);
       box.replaceChildren(
         make("p", "text-gray-400", "Listening stats unavailable right now."),
       );
