@@ -736,12 +736,28 @@ document.addEventListener("DOMContentLoaded", function () {
     return li;
   };
 
-  const loadListening = async () => {
+  // Latest now-playing key (track id + start time); undefined until the first poll.
+  let lastNowPlayingKey;
+  let progressTimer = null;
+  const nowPlayingKey = (np) =>
+    np?.currently_playing ? `${np.track.id}|${np.started_at}` : null;
+  // Small spinner shown during each now-playing poll. It sits on the current heading.
+  const pollSpinner = make(
+    "span",
+    "hidden w-3 h-3 border-2 border-lavender-400 border-t-transparent rounded-full animate-spin",
+  );
+  const attachSpinner = (host) => host.append(pollSpinner);
+
+  // Renders the whole panel from fresh data. Runs on load and whenever the now-playing key changes.
+  const loadListening = async (np) => {
     const box = document.getElementById("listening-stats");
     if (!box) return;
-    box.replaceChildren(
-      make("p", "text-gray-400 animate-pulse", "Loading listening stats…"),
-    );
+    // The placeholder only shows before the first render, so refreshes don't flash.
+    if (box.childElementCount === 0) {
+      box.replaceChildren(
+        make("p", "text-gray-400 animate-pulse", "Loading listening stats…"),
+      );
+    }
     try {
       const data = await fetchListening();
 
@@ -896,6 +912,7 @@ document.addEventListener("DOMContentLoaded", function () {
           make("span", "w-2 h-2 rounded-full bg-lavender-400 animate-pulse"),
           "Now playing",
         );
+        attachSpinner(heading);
 
         const info = make("div", "min-w-0 flex-1");
         info.append(
@@ -934,28 +951,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         nowBox.replaceChildren(heading, list);
       };
-      // now-playing returns the current track only while Koito has one.
-      const refreshNowPlaying = async () => {
-        try {
-          const np = await koitoCall("/now-playing");
-          renderNowPlaying(np.currently_playing ? np : null);
-        } catch (e) {
-          console.warn("Failed to load now playing:", e);
-          renderNowPlaying(null);
-        }
-      };
-      refreshNowPlaying();
-      setInterval(refreshNowPlaying, 15 * 1000);
-      setInterval(updateProgress, 1000);
-
-      setInterval(async () => {
-        try {
-          const res = await koitoCall("/listens?period=all_time&limit=6");
-          recentList.replaceChildren(...res.items.map(recentItem));
-        } catch (e) {
-          console.warn("Failed to refresh Koito listens:", e);
-        }
-      }, 30 * 1000);
+      // Restart the progress ticker for this render's bar.
+      clearInterval(progressTimer);
+      progressTimer = setInterval(updateProgress, 1000);
+      renderNowPlaying(np);
+      if (!np) attachSpinner(recentHeading);
     } catch (e) {
       console.warn("Failed to load Koito data:", e);
       box.replaceChildren(
@@ -964,7 +964,28 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  loadListening();
+  // now-playing is polled every 5s. The panel reloads only when the track or its start time changes.
+  const refreshNowPlaying = async () => {
+    pollSpinner.classList.remove("hidden");
+    try {
+      let np;
+      try {
+        np = await koitoCall("/now-playing");
+      } catch (e) {
+        // Treat a failed poll as nothing playing, so the first render still happens.
+        console.warn("Failed to load now playing:", e);
+        np = { currently_playing: false };
+      }
+      const key = nowPlayingKey(np);
+      if (key === lastNowPlayingKey) return;
+      lastNowPlayingKey = key;
+      await loadListening(np.currently_playing ? np : null);
+    } finally {
+      pollSpinner.classList.add("hidden");
+    }
+  };
+  refreshNowPlaying();
+  setInterval(refreshNowPlaying, 5 * 1000);
 
   Lanyard.init();
 });
